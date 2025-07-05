@@ -1,0 +1,10 @@
+<ion-content class="ion-padding">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <app-subscription-card
+      *ngFor="let plan of plans"
+      [plan]="plan"
+      [isSelected]="selected === plan.id"
+      (selectPlan)="onSelect($event)"
+    ></app-subscription-card>
+  </div>
+</ion-content>

@@ -56,9 +56,9 @@ export class DashboardPage {
   // Acciones rápidas
   quickActions = [
     { name: 'Iniciar Quiz Rápido', href: '/quiz', icon: 'brain' },
-    { name: 'Práctica por Tema', href: '/practice', icon: 'book' },
+    { name: 'Práctica por Tema', href: '/quiz', icon: 'book' },
     { name: 'Ver Estadísticas', href: '/stats', icon: 'stats-chart' },
-    { name: 'Plan de Estudio', href: '/calendar', icon: 'calendar' }
+    { name: 'Plan de Estudio', href: '/dashboard', icon: 'calendar' }
   ];
 
   // Pestañas de práctica recomendada
@@ -70,60 +70,60 @@ export class DashboardPage {
       {
         title: 'Comprensión de Textos Largos',
         description: 'Practica la comprensión de textos académicos y literarios extensos.',
-        href: '/practice/reading/long-texts'
+        href: '/quiz'
       },
       {
         title: 'Identificación de Ideas Principales',
         description: 'Mejora tu capacidad para identificar las ideas principales en textos complejos.',
-        href: '/practice/reading/main-ideas'
+        href: '/quiz'
       }
     ],
     listening: [
       {
         title: 'Comprensión de Conversaciones',
         description: 'Practica la comprensión de diálogos y conversaciones en diferentes contextos.',
-        href: '/practice/listening/conversations'
+        href: '/quiz'
       },
       {
         title: 'Identificación de Detalles',
         description: 'Mejora tu capacidad para captar detalles específicos en audios.',
-        href: '/practice/listening/details'
+        href: '/quiz'
       }
     ],
     useOfEnglish: [
       {
         title: 'Phrasal Verbs',
         description: 'Practica el uso correcto de phrasal verbs en diferentes contextos.',
-        href: '/practice/use-of-english/phrasal-verbs'
+        href: '/quiz'
       },
       {
         title: 'Word Formation',
         description: 'Mejora tu capacidad para formar palabras con prefijos y sufijos.',
-        href: '/practice/use-of-english/word-formation'
+        href: '/quiz'
       }
     ],
     writing: [
       {
         title: 'Essays',
         description: 'Practica la escritura de ensayos argumentativos y de opinión.',
-        href: '/practice/writing/essays'
+        href: '/quiz'
       },
       {
         title: 'Emails Formales',
         description: 'Mejora tu capacidad para escribir emails en contextos formales.',
-        href: '/practice/writing/formal-emails'
+        href: '/quiz'
       }
     ],
     speaking: [
       {
         title: 'Descripción de Imágenes',
         description: 'Practica la descripción detallada de imágenes y fotografías.',
-        href: '/practice/speaking/image-description'
+        href: '/quiz'
       },
       {
         title: 'Expresión de Opiniones',
         description: 'Mejora tu capacidad para expresar y defender opiniones en inglés.',
-        href: '/practice/speaking/opinions'
+        href: '/quiz'
       }
     ]
   };
