@@ -1,0 +1,126 @@
+
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      Practice Quiz
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="cambridge-container">
+    <h1 class="text-2xl font-bold text-primary-800 dark:text-primary-200 mb-4">Cambridge English Practice Quiz</h1>
+    
+    <!-- Quiz Setup -->
+    <div *ngIf="!quizStarted && !quizCompleted">
+      <p class="text-gray-600 dark:text-gray-300 mb-6">Customize your practice quiz by selecting the type and difficulty level.</p>
+      
+      <form [formGroup]="quizForm" (ngSubmit)="startQuiz()">
+        <mat-card class="cambridge-card mb-6">
+          <mat-card-content>
+            <div class="mb-6">
+              <h3 class="text-lg font-medium mb-3">Quiz Type</h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div *ngFor="let type of quizTypes" 
+                     class="quiz-type-card p-4 rounded-lg cursor-pointer"
+                     [class.selected]="quizForm.get('quizType')?.value === type.id"
+                     (click)="quizForm.get('quizType')?.setValue(type.id)">
+                  <ion-icon [name]="type.icon" class="text-3xl mb-2"></ion-icon>
+                  <p class="font-medium">{{ type.name }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-medium mb-3">Difficulty Level</h3>
+              <mat-form-field appearance="fill" class="w-full">
+                <mat-label>Select difficulty</mat-label>
+                <mat-select formControlName="difficultyLevel">
+                  <mat-option *ngFor="let level of difficultyLevels" [value]="level.id">
+                    {{ level.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+        </mat-card>
+        
+        <div class="flex justify-center">
+          <ion-button type="submit" [disabled]="!quizForm.valid" color="primary" size="large">
+            Start Quiz
+          </ion-button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Quiz Questions -->
+    <div *ngIf="quizStarted && !quizCompleted">
+      <mat-progress-bar mode="determinate" [value]="progressPercentage" class="mb-6"></mat-progress-bar>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Question {{ currentStep + 1 }} of {{ totalSteps }}</p>
+      
+      <form [formGroup]="quizForm">
+        <mat-card class="cambridge-card mb-6">
+          <mat-card-content>
+            <h2 class="text-lg font-medium mb-4">{{ questions[currentStep].text }}</h2>
+            
+            <mat-radio-group [formControlName]="'question' + questions[currentStep].id" class="flex flex-col gap-3">
+              <mat-radio-button *ngFor="let option of questions[currentStep].options" [value]="option.value" class="mb-2">
+                {{ option.text }}
+              </mat-radio-button>
+            </mat-radio-group>
+          </mat-card-content>
+        </mat-card>
+        
+        <div class="flex justify-between">
+          <ion-button (click)="previousStep()" [disabled]="currentStep === 0" color="medium">
+            Previous
+          </ion-button>
+          
+          <ion-button *ngIf="currentStep < totalSteps - 1" (click)="nextStep()" 
+                     [disabled]="!quizForm.get('question' + questions[currentStep].id)?.valid" 
+                     color="primary">
+            Next
+          </ion-button>
+          
+          <ion-button *ngIf="currentStep === totalSteps - 1" (click)="submitQuiz()" 
+                     [disabled]="!quizForm.valid" 
+                     color="success">
+            Submit
+          </ion-button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Quiz Results -->
+    <div *ngIf="quizCompleted">
+      <mat-card class="cambridge-card mb-6">
+        <mat-card-content class="text-center py-6">
+          <h2 class="text-2xl font-bold mb-4">Quiz Results</h2>
+          
+          <div class="score-circle mb-6">
+            <div class="score-value">{{ score }}/{{ totalSteps }}</div>
+            <div class="score-percentage">{{ scorePercentage }}%</div>
+          </div>
+          
+          <p class="text-lg mb-4">
+            <span *ngIf="scorePercentage >= 80" class="text-success">Excellent work!</span>
+            <span *ngIf="scorePercentage >= 60 && scorePercentage < 80" class="text-primary">Good job!</span>
+            <span *ngIf="scorePercentage < 60" class="text-warning">Keep practicing!</span>
+          </p>
+          
+          <div class="flex justify-center gap-4 mt-6">
+            <ion-button (click)="restartQuiz()" color="primary">
+              New Quiz
+            </ion-button>
+            <ion-button [routerLink]="['/stats']" color="secondary">
+              View Stats
+            </ion-button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</ion-content>

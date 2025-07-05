@@ -1,0 +1,192 @@
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+// Welcome Section
+.welcome-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.welcome-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.welcome-subtitle {
+  color: var(--ion-color-medium);
+  margin-bottom: 16px;
+  
+  @media (min-width: 768px) {
+    margin-bottom: 0;
+  }
+}
+
+.diagnostic-button {
+  width: 100%;
+  
+  @media (min-width: 768px) {
+    width: auto;
+  }
+}
+
+// Progress Overview
+.progress-overview {
+  margin-bottom: 24px;
+}
+
+.stat-value {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  
+  ion-icon {
+    margin-right: 8px;
+    font-size: 1.5rem;
+  }
+}
+
+.stat-description {
+  color: var(--ion-color-medium);
+  font-size: 0.8rem;
+}
+
+// Skill Progress
+.skill-progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skill-item {
+  width: 100%;
+}
+
+.skill-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.skill-name {
+  font-weight: 500;
+}
+
+.skill-value {
+  color: var(--ion-color-primary);
+}
+
+// Quick Actions
+.quick-actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-button {
+  justify-content: flex-start;
+}
+
+// Recent Activity
+.activity-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.activity-icon {
+  background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+  border-radius: 50%;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  ion-icon {
+    font-size: 1.25rem;
+  }
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0 0 4px 0;
+}
+
+.activity-description,
+.activity-time {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  margin: 0 0 4px 0;
+}
+
+// Chart
+.chart-container {
+  height: 300px;
+  width: 100%;
+}
+
+.chart-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(var(--ion-color-light-rgb), 0.5);
+  border-radius: 8px;
+}
+
+// Practice Cards
+.practice-content {
+  margin-top: 24px;
+}
+
+.practice-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  ion-card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    
+    p {
+      flex: 1;
+    }
+  }
+}
+
+// Utility Classes
+.mt-3 {
+  margin-top: 12px;
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  ion-segment {
+    overflow-x: auto;
+  }
+}

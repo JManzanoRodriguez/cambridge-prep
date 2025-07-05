@@ -1,0 +1,89 @@
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 16px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+ion-card-header {
+  padding-top: 24px;
+  padding-bottom: 16px;
+}
+
+ion-card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+ion-segment {
+  margin-bottom: 24px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.validation-error {
+  color: var(--ion-color-danger);
+  font-size: 0.8rem;
+  margin-left: 16px;
+  margin-top: 4px;
+}
+
+.submit-button {
+  margin-top: 8px;
+}
+
+.divider {
+  position: relative;
+  text-align: center;
+  margin: 24px 0;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--ion-color-light);
+    z-index: 1;
+  }
+  
+  .divider-text {
+    position: relative;
+    display: inline-block;
+    padding: 0 12px;
+    background-color: var(--ion-background-color);
+    color: var(--ion-color-medium);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+}
+
+.social-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.terms-text {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  margin-top: 16px;
+  
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: underline;
+  }
+}

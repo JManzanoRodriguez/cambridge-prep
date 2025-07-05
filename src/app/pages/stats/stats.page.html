@@ -1,0 +1,130 @@
+
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/dashboard"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      Statistics
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  <div class="cambridge-container">
+    <h1 class="text-2xl font-bold text-primary-800 dark:text-primary-200 mb-4">Your Progress Statistics</h1>
+    
+    <mat-tab-group animationDuration="300ms" class="stats-tabs">
+      <mat-tab label="Overview">
+        <div class="p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Progress Chart -->
+            <mat-card class="cambridge-card">
+              <mat-card-header>
+                <mat-card-title>Progress Over Time</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="chart-container">
+                  <canvas baseChart
+                    [data]="progressChartData"
+                    [options]="progressChartOptions"
+                    [type]="'line'">
+                  </canvas>
+                </div>
+              </mat-card-content>
+            </mat-card>
+            
+            <!-- Skills Radar Chart -->
+            <mat-card class="cambridge-card">
+              <mat-card-header>
+                <mat-card-title>Skills Assessment</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="chart-container">
+                  <canvas baseChart
+                    [data]="skillsChartData"
+                    [options]="skillsChartOptions"
+                    [type]="'radar'">
+                  </canvas>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+          
+          <!-- Quiz Performance Chart -->
+          <mat-card class="cambridge-card mt-6">
+            <mat-card-header>
+              <mat-card-title>Quiz Performance by Category</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="chart-container">
+                <canvas baseChart
+                  [data]="quizChartData"
+                  [options]="quizChartOptions"
+                  [type]="'bar'">
+                </canvas>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+      
+      <mat-tab label="Recent Activity">
+        <div class="p-4">
+          <mat-card class="cambridge-card">
+            <mat-card-header>
+              <mat-card-title>Recent Activities</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="activity-list">
+                <div *ngFor="let activity of recentActivities" class="activity-item">
+                  <div class="activity-icon">
+                    <ion-icon [name]="activity.type === 'quiz' ? 'document-text' : 'analytics'" 
+                              [class]="activity.type === 'quiz' ? 'text-primary' : 'text-tertiary'"></ion-icon>
+                  </div>
+                  <div class="activity-details">
+                    <h3 class="activity-name">{{ activity.name }}</h3>
+                    <p class="activity-date">{{ activity.date | date:'mediumDate' }}</p>
+                  </div>
+                  <div class="activity-score" [class]="getScoreClass(activity.score)">
+                    {{ activity.score }}%
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+      
+      <mat-tab label="Recommendations">
+        <div class="p-4">
+          <mat-card class="cambridge-card">
+            <mat-card-header>
+              <mat-card-title>Personalized Recommendations</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">
+                Based on your performance, we recommend focusing on these areas:
+              </p>
+              
+              <div class="recommendation-list">
+                <div *ngFor="let rec of recommendations" class="recommendation-item">
+                  <div class="recommendation-skill">
+                    <span class="skill-badge">{{ rec.skill }}</span>
+                  </div>
+                  <div class="recommendation-details">
+                    <h3 class="recommendation-topic">{{ rec.topic }}</h3>
+                    <p class="recommendation-difficulty">Level: {{ rec.difficulty }}</p>
+                  </div>
+                  <div class="recommendation-action">
+                    <ion-button size="small" color="primary">Practice</ion-button>
+                  </div>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</ion-content>

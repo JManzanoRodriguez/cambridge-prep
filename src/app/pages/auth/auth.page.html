@@ -1,0 +1,121 @@
+<ion-content [fullscreen]="true">
+  <div class="auth-container">
+    <ion-card class="auth-card">
+      <ion-card-header>
+        <ion-card-title class="ion-text-center">Cambridge Prep App</ion-card-title>
+        <ion-card-subtitle class="ion-text-center">
+          Inicia sesión o crea una cuenta para comenzar
+        </ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <ion-segment [(ngModel)]="segment" (ionChange)="segmentChanged($event)">
+          <ion-segment-button value="login">
+            <ion-label>Iniciar Sesión</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="register">
+            <ion-label>Registrarse</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+        
+        <div class="segment-content">
+          <!-- Login Form -->
+          <form *ngIf="segment === 'login'" [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" class="auth-form">
+            <ion-item>
+              <ion-label position="floating">Correo Electrónico</ion-label>
+              <ion-input type="email" formControlName="email"></ion-input>
+            </ion-item>
+            <div class="validation-error" *ngIf="loginEmail?.invalid && loginEmail?.touched">
+              <span *ngIf="loginEmail?.errors?.['required']">El correo electrónico es requerido</span>
+              <span *ngIf="loginEmail?.errors?.['email']">Ingresa un correo electrónico válido</span>
+            </div>
+            
+            <ion-item>
+              <ion-label position="floating">Contraseña</ion-label>
+              <ion-input type="password" formControlName="password"></ion-input>
+            </ion-item>
+            <div class="validation-error" *ngIf="loginPassword?.invalid && loginPassword?.touched">
+              <span *ngIf="loginPassword?.errors?.['required']">La contraseña es requerida</span>
+              <span *ngIf="loginPassword?.errors?.['minlength']">La contraseña debe tener al menos 6 caracteres</span>
+            </div>
+            
+            <ion-button type="submit" expand="block" [disabled]="isLoading" class="submit-button">
+              <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+              <span *ngIf="!isLoading">Iniciar Sesión</span>
+            </ion-button>
+          </form>
+          
+          <!-- Register Form -->
+          <form *ngIf="segment === 'register'" [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()" class="auth-form">
+            <ion-item>
+              <ion-label position="floating">Nombre</ion-label>
+              <ion-input type="text" formControlName="name"></ion-input>
+            </ion-item>
+            <div class="validation-error" *ngIf="registerName?.invalid && registerName?.touched">
+              <span *ngIf="registerName?.errors?.['required']">El nombre es requerido</span>
+              <span *ngIf="registerName?.errors?.['minlength']">El nombre debe tener al menos 2 caracteres</span>
+            </div>
+            
+            <ion-item>
+              <ion-label position="floating">Correo Electrónico</ion-label>
+              <ion-input type="email" formControlName="email"></ion-input>
+            </ion-item>
+            <div class="validation-error" *ngIf="registerEmail?.invalid && registerEmail?.touched">
+              <span *ngIf="registerEmail?.errors?.['required']">El correo electrónico es requerido</span>
+              <span *ngIf="registerEmail?.errors?.['email']">Ingresa un correo electrónico válido</span>
+            </div>
+            
+            <ion-item>
+              <ion-label position="floating">Contraseña</ion-label>
+              <ion-input type="password" formControlName="password"></ion-input>
+            </ion-item>
+            <div class="validation-error" *ngIf="registerPassword?.invalid && registerPassword?.touched">
+              <span *ngIf="registerPassword?.errors?.['required']">La contraseña es requerida</span>
+              <span *ngIf="registerPassword?.errors?.['minlength']">La contraseña debe tener al menos 6 caracteres</span>
+            </div>
+            
+            <ion-item>
+              <ion-label position="floating">Confirmar Contraseña</ion-label>
+              <ion-input type="password" formControlName="confirmPassword"></ion-input>
+            </ion-item>
+            <div class="validation-error" *ngIf="registerConfirmPassword?.invalid && registerConfirmPassword?.touched">
+              <span *ngIf="registerConfirmPassword?.errors?.['required']">Confirma tu contraseña</span>
+            </div>
+            <div class="validation-error" *ngIf="registerForm.hasError('mismatch') && registerConfirmPassword?.touched">
+              <span>Las contraseñas no coinciden</span>
+            </div>
+            
+            <ion-button type="submit" expand="block" [disabled]="isLoading" class="submit-button">
+              <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+              <span *ngIf="!isLoading">Crear Cuenta</span>
+            </ion-button>
+          </form>
+        </div>
+        
+        <div class="divider">
+          <span class="divider-text">O continuar con</span>
+        </div>
+        
+        <div class="social-buttons">
+          <ion-button expand="block" fill="outline" (click)="handleSocialLogin('Google')" [disabled]="isLoading">
+            <ion-icon name="mail" slot="start"></ion-icon>
+            Google
+          </ion-button>
+          <ion-button expand="block" fill="outline" (click)="handleSocialLogin('Facebook')" [disabled]="isLoading">
+            <ion-icon name="logo-facebook" slot="start"></ion-icon>
+            Facebook
+          </ion-button>
+        </div>
+      </ion-card-content>
+      
+      <ion-card-content>
+        <div class="terms-text ion-text-center">
+          Al continuar, aceptas nuestros
+          <a routerLink="/terms">Términos de servicio</a>
+          y
+          <a routerLink="/privacy">Política de privacidad</a>.
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

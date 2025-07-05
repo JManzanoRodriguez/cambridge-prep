@@ -1,0 +1,75 @@
+<ion-header [translucent]="true" [class.scrolled]="isScrolled" class="ion-no-border">
+  <ion-toolbar>
+    <div class="header-container">
+      <div class="logo-container">
+        <ion-button fill="clear" routerLink="/" class="logo-button">
+          <ion-icon name="ribbon" slot="start"></ion-icon>
+          <span class="logo-text">Cambridge Prep</span>
+        </ion-button>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <ion-buttons class="nav-buttons desktop-nav">
+        <ng-container *ngIf="isAuthenticated">
+          <ion-button 
+            *ngFor="let item of navItems" 
+            [routerLink]="item.href" 
+            [color]="currentPath === item.href ? 'primary' : 'medium'"
+            [fill]="currentPath === item.href ? 'solid' : 'clear'"
+            size="small"
+            class="nav-button"
+          >
+            <ion-icon [name]="item.icon" slot="start"></ion-icon>
+            <span>{{ item.name }}</span>
+          </ion-button>
+        </ng-container>
+      </ion-buttons>
+
+      <div class="right-buttons">
+        <!-- Theme Toggle Button -->
+        <ion-button fill="clear" (click)="toggleTheme()">
+          <ion-icon name="moon" slot="icon-only"></ion-icon>
+        </ion-button>
+        
+        <!-- User Menu (if authenticated) -->
+        <ion-button *ngIf="isAuthenticated" id="user-menu-trigger" fill="clear">
+          <ion-avatar slot="icon-only">
+            <img alt="User" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+          </ion-avatar>
+        </ion-button>
+        <ion-popover trigger="user-menu-trigger" [dismissOnSelect]="true">
+          <ng-template>
+            <ion-content>
+              <ion-list lines="none">
+                <ion-item-divider>
+                  <ion-label>Mi Cuenta</ion-label>
+                </ion-item-divider>
+                <ion-item [routerLink]="['/profile']" detail="false" button>
+                  <ion-icon name="person" slot="start"></ion-icon>
+                  <ion-label>Perfil</ion-label>
+                </ion-item>
+                <ion-item [routerLink]="['/subscription']" detail="false" button>
+                  <ion-icon name="ribbon" slot="start"></ion-icon>
+                  <ion-label>Suscripción</ion-label>
+                </ion-item>
+                <ion-item-divider></ion-item-divider>
+                <ion-item (click)="logout()" detail="false" button class="logout-item">
+                  <ion-icon name="log-out" slot="start"></ion-icon>
+                  <ion-label>Cerrar Sesión</ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-content>
+          </ng-template>
+        </ion-popover>
+
+        <!-- Login Button (if not authenticated) -->
+        <ion-button *ngIf="!isAuthenticated && currentPath !== '/login'" routerLink="/login" size="small">
+          Iniciar Sesión
+        </ion-button>
+
+        <!-- Mobile Menu Button -->
+        <ion-menu-button class="mobile-menu-button"></ion-menu-button>
+      </div>
+    </div>
+  </ion-toolbar>
+</ion-header>

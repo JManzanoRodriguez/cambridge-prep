@@ -1,0 +1,101 @@
+
+<div class="cambridge-container ion-padding">
+  <h1 class="text-2xl font-bold text-primary-800 dark:text-primary-200 mb-4">Your Profile</h1>
+  
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Profile Information -->
+    <div class="md:col-span-2">
+      <mat-card class="cambridge-card">
+        <mat-card-header>
+          <mat-card-title>Personal Information</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+            <mat-form-field appearance="outline" class="w-full mb-4">
+              <mat-label>Full Name</mat-label>
+              <input matInput type="text" formControlName="name">
+              <mat-icon matPrefix>person</mat-icon>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="w-full mb-4">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email">
+              <mat-icon matPrefix>email</mat-icon>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline" class="w-full mb-4">
+              <mat-label>Preferred Language</mat-label>
+              <mat-select formControlName="language">
+                <mat-option value="english">English</mat-option>
+                <mat-option value="spanish">Spanish</mat-option>
+                <mat-option value="french">French</mat-option>
+                <mat-option value="german">German</mat-option>
+              </mat-select>
+              <mat-icon matPrefix>language</mat-icon>
+            </mat-form-field>
+            
+            <div class="flex items-center mb-6">
+              <mat-slide-toggle formControlName="notifications" color="primary">
+                Enable Notifications
+              </mat-slide-toggle>
+            </div>
+            
+            <ion-button type="submit" [disabled]="!profileForm.valid">
+              Save Changes
+            </ion-button>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+    
+    <!-- Settings -->
+    <div>
+      <mat-card class="cambridge-card">
+        <mat-card-header>
+          <mat-card-title>Settings</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="settings-list">
+            <div class="setting-item">
+              <div class="setting-label">
+                <mat-icon>dark_mode</mat-icon>
+                <span>Dark Mode</span>
+              </div>
+              <mat-slide-toggle [checked]="darkMode" (change)="toggleDarkMode()" color="primary">
+              </mat-slide-toggle>
+            </div>
+            
+            <div class="setting-item">
+              <div class="setting-label">
+                <mat-icon>notifications</mat-icon>
+                <span>Push Notifications</span>
+              </div>
+              <mat-slide-toggle [checked]="profileForm.get('notifications').value" 
+                               (change)="profileForm.get('notifications').setValue($event.checked)" 
+                               color="primary">
+              </mat-slide-toggle>
+            </div>
+            
+            <div class="setting-item">
+              <div class="setting-label">
+                <mat-icon>data_usage</mat-icon>
+                <span>Data Saving Mode</span>
+              </div>
+              <mat-slide-toggle color="primary">
+              </mat-slide-toggle>
+            </div>
+          </div>
+          
+          <div class="mt-6">
+            <ion-button expand="block" color="danger" fill="outline">
+              <ion-icon name="log-out-outline" slot="start"></ion-icon>
+              Logout
+            </ion-button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
