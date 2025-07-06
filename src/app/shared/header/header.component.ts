@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { filter, Subscription } from 'rxjs';
 import { NgIf, NgFor, CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -16,6 +17,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   currentPath = '';
   isAuthenticated = false;
   darkMode = false;
+  private themeSub!: Subscription;
 
   navItems = [
     { name: 'Inicio', href: '/dashboard', icon: 'home' },
@@ -24,23 +26,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     { name: 'Estadísticas', href: '/stats', icon: 'stats-chart' },
   ];
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private themeService: ThemeService) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.currentPath = event.url;
       this.isAuthenticated = this.currentPath !== '/login' && this.currentPath !== '/';
     });
-
-    // Check if dark mode is enabled
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    this.darkMode = prefersDark.matches;
-    this.setTheme(this.darkMode);
-
-    // Listen for changes to the prefers-color-scheme media query
-    prefersDark.addEventListener('change', (mediaQuery) => {
-      this.darkMode = mediaQuery.matches;
-      this.setTheme(this.darkMode);
+    // Subscribe to theme changes
+    this.themeSub = this.themeService.darkMode$.subscribe(dark => {
+      this.darkMode = dark;
     });
   }
 
@@ -50,6 +45,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('scroll', this.handleScroll.bind(this));
+    if (this.themeSub) {
+      this.themeSub.unsubscribe();
+    }
   }
 
   handleScroll() {
@@ -57,12 +55,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   toggleTheme() {
-    this.darkMode = !this.darkMode;
-    this.setTheme(this.darkMode);
-  }
-
-  setTheme(dark: boolean) {
-    document.body.classList.toggle('dark', dark);
+    this.themeService.toggleDarkMode();
   }
 
   logout() {

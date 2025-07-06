@@ -72,8 +72,8 @@
                 <mat-icon>notifications</mat-icon>
                 <span>Push Notifications</span>
               </div>
-              <mat-slide-toggle [checked]="profileForm.get('notifications').value" 
-                               (change)="profileForm.get('notifications').setValue($event.checked)" 
+              <mat-slide-toggle [checked]="profileForm.get('notifications')!.value"
+                               (change)="profileForm.get('notifications')!.setValue($event.checked)"
                                color="primary">
               </mat-slide-toggle>
             </div>
