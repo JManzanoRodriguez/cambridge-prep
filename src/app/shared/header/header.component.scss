@@ -3,7 +3,7 @@ ion-header {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 10;
   transition: all 0.3s ease;
   background: transparent;
   
@@ -72,6 +72,18 @@ ion-toolbar {
 
 .mobile-menu-button {
   display: block;
+}
+
+.profile-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+@media (max-width: 480px) {
+  .profile-avatar {
+    width: 28px;
+    height: 28px;
+  }
 }
 
 @media (min-width: 768px) {
