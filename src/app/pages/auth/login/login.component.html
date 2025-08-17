@@ -5,21 +5,25 @@
       <mat-card-header>
         <mat-card-title>Login to Cambridge Prep</mat-card-title>
       </mat-card-header>
-      
+
       <mat-card-content>
         <form [formGroup]="loginForm" (ngSubmit)="login()">
           <mat-form-field appearance="outline" class="w-full mb-4">
             <mat-label>Email</mat-label>
             <input matInput type="email" formControlName="email" placeholder="your.email@example.com">
             <mat-icon matPrefix>email</mat-icon>
-            <mat-error *ngIf="loginForm.get('email').hasError('required')">
-              Email is required
-            </mat-error>
-            <mat-error *ngIf="loginForm.get('email').hasError('email')">
-              Please enter a valid email address
-            </mat-error>
+            @if (loginForm.get('email').hasError('required')) {
+              <mat-error>
+                Email is required
+              </mat-error>
+            }
+            @if (loginForm.get('email').hasError('email')) {
+              <mat-error>
+                Please enter a valid email address
+              </mat-error>
+            }
           </mat-form-field>
-          
+
           <mat-form-field appearance="outline" class="w-full mb-4">
             <mat-label>Password</mat-label>
             <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
@@ -27,14 +31,18 @@
             <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
               <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
-            <mat-error *ngIf="loginForm.get('password').hasError('required')">
-              Password is required
-            </mat-error>
-            <mat-error *ngIf="loginForm.get('password').hasError('minlength')">
-              Password must be at least 6 characters
-            </mat-error>
+            @if (loginForm.get('password').hasError('required')) {
+              <mat-error>
+                Password is required
+              </mat-error>
+            }
+            @if (loginForm.get('password').hasError('minlength')) {
+              <mat-error>
+                Password must be at least 6 characters
+              </mat-error>
+            }
           </mat-form-field>
-          
+
           <div class="flex justify-between items-center mb-6">
             <a routerLink="/auth/register" class="text-primary hover:underline">
               Create an account
@@ -43,7 +51,7 @@
               Forgot password?
             </a>
           </div>
-          
+
           <ion-button expand="block" type="submit" [disabled]="!loginForm.valid">
             Login
           </ion-button>

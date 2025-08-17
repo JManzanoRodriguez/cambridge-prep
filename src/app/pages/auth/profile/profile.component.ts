@@ -3,7 +3,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ThemeService } from '../../../core/services/theme.service';
-import { CommonModule } from '@angular/common';
+
 import { IonicModule } from '@ionic/angular';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -19,7 +19,6 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrls: ['./profile.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
@@ -30,7 +29,7 @@ import { MatButtonModule } from '@angular/material/button';
     MatIconModule,
     MatSlideToggleModule,
     MatButtonModule
-  ]
+]
 })
 export class ProfileComponent implements OnInit, OnDestroy {
   profileForm: FormGroup;

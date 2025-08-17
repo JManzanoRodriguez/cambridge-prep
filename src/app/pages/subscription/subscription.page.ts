@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+
 import { SubscriptionCardComponent } from '../../shared/components/subscription-card/subscription-card.component';
 
 @Component({
@@ -8,7 +8,7 @@ import { SubscriptionCardComponent } from '../../shared/components/subscription-
   templateUrl: './subscription.page.html',
   styleUrls: ['./subscription.page.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, SubscriptionCardComponent]
+  imports: [IonicModule, SubscriptionCardComponent]
 })
 export class SubscriptionPage {
   plans = [

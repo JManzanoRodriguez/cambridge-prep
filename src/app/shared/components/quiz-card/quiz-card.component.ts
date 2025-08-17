@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { NgIf, NgFor, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 
@@ -21,7 +21,7 @@ export interface QuizQuestion {
   selector: 'app-quiz-card',
   templateUrl: './quiz-card.component.html',
   styleUrls: ['./quiz-card.component.scss'],
-  imports: [CommonModule, NgIf, NgFor, IonicModule, RouterModule],
+  imports: [CommonModule, IonicModule, RouterModule],
   standalone: true,
 })
 export class QuizCardComponent {

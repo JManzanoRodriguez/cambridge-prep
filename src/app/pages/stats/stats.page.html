@@ -13,7 +13,7 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="cambridge-container">
     <h1 class="text-2xl font-bold text-primary-800 dark:text-primary-200 mb-4">Your Progress Statistics</h1>
-    
+
     <mat-tab-group animationDuration="300ms" class="stats-tabs">
       <mat-tab label="Overview">
         <div class="p-4">
@@ -33,7 +33,7 @@
                 </div>
               </mat-card-content>
             </mat-card>
-            
+
             <!-- Skills Radar Chart -->
             <mat-card class="cambridge-card">
               <mat-card-header>
@@ -50,7 +50,7 @@
               </mat-card-content>
             </mat-card>
           </div>
-          
+
           <!-- Quiz Performance Chart -->
           <mat-card class="cambridge-card mt-6">
             <mat-card-header>
@@ -68,7 +68,7 @@
           </mat-card>
         </div>
       </mat-tab>
-      
+
       <mat-tab label="Recent Activity">
         <div class="p-4">
           <mat-card class="cambridge-card">
@@ -77,25 +77,27 @@
             </mat-card-header>
             <mat-card-content>
               <div class="activity-list">
-                <div *ngFor="let activity of recentActivities" class="activity-item">
-                  <div class="activity-icon">
-                    <ion-icon [name]="activity.type === 'quiz' ? 'document-text' : 'analytics'" 
-                              [class]="activity.type === 'quiz' ? 'text-primary' : 'text-tertiary'"></ion-icon>
+                @for (activity of recentActivities; track activity) {
+                  <div class="activity-item">
+                    <div class="activity-icon">
+                      <ion-icon [name]="activity.type === 'quiz' ? 'document-text' : 'analytics'"
+                      [class]="activity.type === 'quiz' ? 'text-primary' : 'text-tertiary'"></ion-icon>
+                    </div>
+                    <div class="activity-details">
+                      <h3 class="activity-name">{{ activity.name }}</h3>
+                      <p class="activity-date">{{ activity.date | date:'mediumDate' }}</p>
+                    </div>
+                    <div class="activity-score" [class]="getScoreClass(activity.score)">
+                      {{ activity.score }}%
+                    </div>
                   </div>
-                  <div class="activity-details">
-                    <h3 class="activity-name">{{ activity.name }}</h3>
-                    <p class="activity-date">{{ activity.date | date:'mediumDate' }}</p>
-                  </div>
-                  <div class="activity-score" [class]="getScoreClass(activity.score)">
-                    {{ activity.score }}%
-                  </div>
-                </div>
+                }
               </div>
             </mat-card-content>
           </mat-card>
         </div>
       </mat-tab>
-      
+
       <mat-tab label="Recommendations">
         <div class="p-4">
           <mat-card class="cambridge-card">
@@ -106,20 +108,22 @@
               <p class="text-gray-600 dark:text-gray-300 mb-4">
                 Based on your performance, we recommend focusing on these areas:
               </p>
-              
+
               <div class="recommendation-list">
-                <div *ngFor="let rec of recommendations" class="recommendation-item">
-                  <div class="recommendation-skill">
-                    <span class="skill-badge">{{ rec.skill }}</span>
+                @for (rec of recommendations; track rec) {
+                  <div class="recommendation-item">
+                    <div class="recommendation-skill">
+                      <span class="skill-badge">{{ rec.skill }}</span>
+                    </div>
+                    <div class="recommendation-details">
+                      <h3 class="recommendation-topic">{{ rec.topic }}</h3>
+                      <p class="recommendation-difficulty">Level: {{ rec.difficulty }}</p>
+                    </div>
+                    <div class="recommendation-action">
+                      <ion-button size="small" color="primary">Practice</ion-button>
+                    </div>
                   </div>
-                  <div class="recommendation-details">
-                    <h3 class="recommendation-topic">{{ rec.topic }}</h3>
-                    <p class="recommendation-difficulty">Level: {{ rec.difficulty }}</p>
-                  </div>
-                  <div class="recommendation-action">
-                    <ion-button size="small" color="primary">Practice</ion-button>
-                  </div>
-                </div>
+                }
               </div>
             </mat-card-content>
           </mat-card>

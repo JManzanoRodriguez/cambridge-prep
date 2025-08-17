@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
-import { NgIf, NgFor, CommonModule } from '@angular/common';
+
 import { IonicModule } from '@ionic/angular';
 import { ThemeService } from '../../core/services/theme.service';
 
@@ -9,7 +9,7 @@ import { ThemeService } from '../../core/services/theme.service';
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
-  imports: [CommonModule, NgIf, NgFor, IonicModule, RouterModule],
+  imports: [IonicModule, RouterModule],
   standalone: true,
 })
 export class HeaderComponent implements OnInit, OnDestroy {

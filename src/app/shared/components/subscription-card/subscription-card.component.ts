@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { NgIf, NgFor, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 
@@ -23,7 +23,7 @@ export interface SubscriptionPlan {
   selector: 'app-subscription-card',
   templateUrl: './subscription-card.component.html',
   styleUrls: ['./subscription-card.component.scss'],
-  imports: [CommonModule, NgIf, NgFor, IonicModule, RouterModule],
+  imports: [CommonModule, IonicModule, RouterModule],
   standalone: true,
 })
 export class SubscriptionCardComponent {

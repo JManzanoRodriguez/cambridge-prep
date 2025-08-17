@@ -2,7 +2,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { IonicModule } from '@ionic/angular';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,7 +19,6 @@ import { MatTabsModule } from '@angular/material/tabs';
   styleUrls: ['./quiz.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
@@ -32,7 +31,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatChipsModule,
     MatIconModule,
     MatTabsModule
-  ]
+]
 })
 export class QuizPage {
   quizForm: FormGroup = this.formBuilder.group({

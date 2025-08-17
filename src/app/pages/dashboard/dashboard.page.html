@@ -29,7 +29,7 @@
             </ion-card-content>
           </ion-card>
         </ion-col>
-        
+
         <ion-col size="12" size-md="3">
           <ion-card>
             <ion-card-header>
@@ -44,7 +44,7 @@
             </ion-card-content>
           </ion-card>
         </ion-col>
-        
+
         <ion-col size="12" size-md="3">
           <ion-card>
             <ion-card-header>
@@ -59,7 +59,7 @@
             </ion-card-content>
           </ion-card>
         </ion-col>
-        
+
         <ion-col size="12" size-md="3">
           <ion-card>
             <ion-card-header>
@@ -89,13 +89,15 @@
             </ion-card-header>
             <ion-card-content>
               <div class="skill-progress-container">
-                <div *ngFor="let skill of skillProgress" class="skill-item">
-                  <div class="skill-header">
-                    <span class="skill-name">{{ skill.name }}</span>
-                    <span class="skill-value">{{ skill.value }}%</span>
+                @for (skill of skillProgress; track skill) {
+                  <div class="skill-item">
+                    <div class="skill-header">
+                      <span class="skill-name">{{ skill.name }}</span>
+                      <span class="skill-value">{{ skill.value }}%</span>
+                    </div>
+                    <ion-progress-bar [value]="skill.value / 100" color="primary"></ion-progress-bar>
                   </div>
-                  <ion-progress-bar [value]="skill.value / 100" color="primary"></ion-progress-bar>
-                </div>
+                }
               </div>
             </ion-card-content>
             <ion-card-content>
@@ -116,14 +118,16 @@
             </ion-card-header>
             <ion-card-content>
               <div class="quick-actions-container">
-                <ion-button *ngFor="let action of quickActions" 
-                  [routerLink]="action.href" 
-                  expand="block" 
-                  fill="outline" 
-                  class="action-button">
-                  <ion-icon [name]="action.icon" slot="start"></ion-icon>
-                  {{ action.name }}
-                </ion-button>
+                @for (action of quickActions; track action) {
+                  <ion-button
+                    [routerLink]="action.href"
+                    expand="block"
+                    fill="outline"
+                    class="action-button">
+                    <ion-icon [name]="action.icon" slot="start"></ion-icon>
+                    {{ action.name }}
+                  </ion-button>
+                }
               </div>
             </ion-card-content>
             <ion-card-content>
@@ -146,16 +150,18 @@
             </ion-card-header>
             <ion-card-content>
               <div class="activity-container">
-                <div *ngFor="let activity of recentActivities" class="activity-item">
-                  <div class="activity-icon">
-                    <ion-icon [name]="activity.icon" color="primary"></ion-icon>
+                @for (activity of recentActivities; track activity) {
+                  <div class="activity-item">
+                    <div class="activity-icon">
+                      <ion-icon [name]="activity.icon" color="primary"></ion-icon>
+                    </div>
+                    <div class="activity-content">
+                      <h3 class="activity-title">{{ activity.title }}</h3>
+                      <p class="activity-description">{{ activity.description }}</p>
+                      <p class="activity-time">{{ activity.time }}</p>
+                    </div>
                   </div>
-                  <div class="activity-content">
-                    <h3 class="activity-title">{{ activity.title }}</h3>
-                    <p class="activity-description">{{ activity.description }}</p>
-                    <p class="activity-time">{{ activity.time }}</p>
-                  </div>
-                </div>
+                }
               </div>
             </ion-card-content>
             <ion-card-content>
@@ -213,96 +219,114 @@
               </ion-segment>
 
               <div class="practice-content">
-                <div [ngSwitch]="selectedTab">
-                  <ion-grid *ngSwitchCase="'reading'">
-                    <ion-row>
-                      <ion-col *ngFor="let practice of recommendedPractice.reading" size="12" size-md="6">
-                        <ion-card class="practice-card">
-                          <ion-card-header>
-                            <ion-card-title>{{ practice.title }}</ion-card-title>
-                          </ion-card-header>
-                          <ion-card-content>
-                            <p>{{ practice.description }}</p>
-                            <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
-                              Comenzar Práctica
-                            </ion-button>
-                          </ion-card-content>
-                        </ion-card>
-                      </ion-col>
-                    </ion-row>
-                  </ion-grid>
-
-                  <ion-grid *ngSwitchCase="'listening'">
-                    <ion-row>
-                      <ion-col *ngFor="let practice of recommendedPractice.listening" size="12" size-md="6">
-                        <ion-card class="practice-card">
-                          <ion-card-header>
-                            <ion-card-title>{{ practice.title }}</ion-card-title>
-                          </ion-card-header>
-                          <ion-card-content>
-                            <p>{{ practice.description }}</p>
-                            <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
-                              Comenzar Práctica
-                            </ion-button>
-                          </ion-card-content>
-                        </ion-card>
-                      </ion-col>
-                    </ion-row>
-                  </ion-grid>
-
-                  <ion-grid *ngSwitchCase="'useOfEnglish'">
-                    <ion-row>
-                      <ion-col *ngFor="let practice of recommendedPractice.useOfEnglish" size="12" size-md="6">
-                        <ion-card class="practice-card">
-                          <ion-card-header>
-                            <ion-card-title>{{ practice.title }}</ion-card-title>
-                          </ion-card-header>
-                          <ion-card-content>
-                            <p>{{ practice.description }}</p>
-                            <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
-                              Comenzar Práctica
-                            </ion-button>
-                          </ion-card-content>
-                        </ion-card>
-                      </ion-col>
-                    </ion-row>
-                  </ion-grid>
-
-                  <ion-grid *ngSwitchCase="'writing'">
-                    <ion-row>
-                      <ion-col *ngFor="let practice of recommendedPractice.writing" size="12" size-md="6">
-                        <ion-card class="practice-card">
-                          <ion-card-header>
-                            <ion-card-title>{{ practice.title }}</ion-card-title>
-                          </ion-card-header>
-                          <ion-card-content>
-                            <p>{{ practice.description }}</p>
-                            <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
-                              Comenzar Práctica
-                            </ion-button>
-                          </ion-card-content>
-                        </ion-card>
-                      </ion-col>
-                    </ion-row>
-                  </ion-grid>
-
-                  <ion-grid *ngSwitchCase="'speaking'">
-                    <ion-row>
-                      <ion-col *ngFor="let practice of recommendedPractice.speaking" size="12" size-md="6">
-                        <ion-card class="practice-card">
-                          <ion-card-header>
-                            <ion-card-title>{{ practice.title }}</ion-card-title>
-                          </ion-card-header>
-                          <ion-card-content>
-                            <p>{{ practice.description }}</p>
-                            <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
-                              Comenzar Práctica
-                            </ion-button>
-                          </ion-card-content>
-                        </ion-card>
-                      </ion-col>
-                    </ion-row>
-                  </ion-grid>
+                <div>
+                  @switch (selectedTab) {
+                    @case ('reading') {
+                      <ion-grid>
+                        <ion-row>
+                          @for (practice of recommendedPractice.reading; track practice) {
+                            <ion-col size="12" size-md="6">
+                              <ion-card class="practice-card">
+                                <ion-card-header>
+                                  <ion-card-title>{{ practice.title }}</ion-card-title>
+                                </ion-card-header>
+                                <ion-card-content>
+                                  <p>{{ practice.description }}</p>
+                                  <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
+                                    Comenzar Práctica
+                                  </ion-button>
+                                </ion-card-content>
+                              </ion-card>
+                            </ion-col>
+                          }
+                        </ion-row>
+                      </ion-grid>
+                    }
+                    @case ('listening') {
+                      <ion-grid>
+                        <ion-row>
+                          @for (practice of recommendedPractice.listening; track practice) {
+                            <ion-col size="12" size-md="6">
+                              <ion-card class="practice-card">
+                                <ion-card-header>
+                                  <ion-card-title>{{ practice.title }}</ion-card-title>
+                                </ion-card-header>
+                                <ion-card-content>
+                                  <p>{{ practice.description }}</p>
+                                  <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
+                                    Comenzar Práctica
+                                  </ion-button>
+                                </ion-card-content>
+                              </ion-card>
+                            </ion-col>
+                          }
+                        </ion-row>
+                      </ion-grid>
+                    }
+                    @case ('useOfEnglish') {
+                      <ion-grid>
+                        <ion-row>
+                          @for (practice of recommendedPractice.useOfEnglish; track practice) {
+                            <ion-col size="12" size-md="6">
+                              <ion-card class="practice-card">
+                                <ion-card-header>
+                                  <ion-card-title>{{ practice.title }}</ion-card-title>
+                                </ion-card-header>
+                                <ion-card-content>
+                                  <p>{{ practice.description }}</p>
+                                  <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
+                                    Comenzar Práctica
+                                  </ion-button>
+                                </ion-card-content>
+                              </ion-card>
+                            </ion-col>
+                          }
+                        </ion-row>
+                      </ion-grid>
+                    }
+                    @case ('writing') {
+                      <ion-grid>
+                        <ion-row>
+                          @for (practice of recommendedPractice.writing; track practice) {
+                            <ion-col size="12" size-md="6">
+                              <ion-card class="practice-card">
+                                <ion-card-header>
+                                  <ion-card-title>{{ practice.title }}</ion-card-title>
+                                </ion-card-header>
+                                <ion-card-content>
+                                  <p>{{ practice.description }}</p>
+                                  <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
+                                    Comenzar Práctica
+                                  </ion-button>
+                                </ion-card-content>
+                              </ion-card>
+                            </ion-col>
+                          }
+                        </ion-row>
+                      </ion-grid>
+                    }
+                    @case ('speaking') {
+                      <ion-grid>
+                        <ion-row>
+                          @for (practice of recommendedPractice.speaking; track practice) {
+                            <ion-col size="12" size-md="6">
+                              <ion-card class="practice-card">
+                                <ion-card-header>
+                                  <ion-card-title>{{ practice.title }}</ion-card-title>
+                                </ion-card-header>
+                                <ion-card-content>
+                                  <p>{{ practice.description }}</p>
+                                  <ion-button [routerLink]="practice.href" expand="block" fill="outline" class="mt-3">
+                                    Comenzar Práctica
+                                  </ion-button>
+                                </ion-card-content>
+                              </ion-card>
+                            </ion-col>
+                          }
+                        </ion-row>
+                      </ion-grid>
+                    }
+                  }
                 </div>
               </div>
             </ion-card-content>

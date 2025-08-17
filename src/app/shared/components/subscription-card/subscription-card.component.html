@@ -1,37 +1,41 @@
 <ion-card class="subscription-card" [ngClass]="{'popular': plan.isPopular, 'selected': isSelected}">
-  <div class="popular-badge" *ngIf="plan.isPopular">Más Popular</div>
-  
+  @if (plan.isPopular) {
+    <div class="popular-badge">Más Popular</div>
+  }
+
   <ion-card-header>
     <ion-card-title>{{ plan.name }}</ion-card-title>
     <ion-card-subtitle>{{ plan.description }}</ion-card-subtitle>
-    
+
     <div class="price-container">
       <span class="price-currency">{{ plan.currency }}</span>
       <span class="price-amount">{{ formatPrice(plan.price) }}</span>
       <span class="price-period">/{{ plan.period }}</span>
     </div>
   </ion-card-header>
-  
+
   <ion-card-content>
     <ul class="feature-list">
-      <li class="feature-item" *ngFor="let feature of plan.features">
-        <ion-icon 
-          [name]="feature.enabled ? 'checkmark-circle' : 'close-circle'" 
-          class="feature-icon"
-          [ngClass]="{'disabled': !feature.enabled}"
-        ></ion-icon>
-        <span [ngClass]="{'disabled-text': !feature.enabled}">{{ feature.text }}</span>
-      </li>
+      @for (feature of plan.features; track feature) {
+        <li class="feature-item">
+          <ion-icon
+            [name]="feature.enabled ? 'checkmark-circle' : 'close-circle'"
+            class="feature-icon"
+            [ngClass]="{'disabled': !feature.enabled}"
+          ></ion-icon>
+          <span [ngClass]="{'disabled-text': !feature.enabled}">{{ feature.text }}</span>
+        </li>
+      }
     </ul>
   </ion-card-content>
-  
+
   <ion-footer>
     <ion-toolbar>
-      <ion-button 
-        expand="block" 
-        [fill]="isSelected ? 'solid' : 'outline'" 
+      <ion-button
+        expand="block"
+        [fill]="isSelected ? 'solid' : 'outline'"
         (click)="onSelectPlan()"
-      >
+        >
         {{ isSelected ? 'Plan Seleccionado' : 'Seleccionar Plan' }}
       </ion-button>
     </ion-toolbar>

@@ -2,14 +2,14 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController, IonicModule } from '@ionic/angular';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.page.html',
   styleUrls: ['./auth.page.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule]
+  imports: [FormsModule, ReactiveFormsModule, IonicModule]
 })
 export class AuthPage {
   segment = 'login';
