@@ -3,18 +3,25 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../core/services/auth.service';
+import { SupabaseService } from '../../core/services/supabase.service';
+import { OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
   standalone: true,
-  imports: [FormsModule, IonicModule, RouterModule]
+  imports: [CommonModule, FormsModule, IonicModule, RouterModule]
 })
-export class DashboardPage {
+export class DashboardPage implements OnInit {
+  userLevel = 'A1';
+  hasCompletedDiagnostic = false;
+  
   // Datos de progreso
   progressData = {
-    level: 'B2',
+    level: 'A1',
     completedQuestions: 124,
     totalQuestions: 200,
     accuracy: 78,
@@ -128,7 +135,35 @@ export class DashboardPage {
     ]
   };
 
-  constructor() { }
+  constructor(
+    private authService: AuthService,
+    private supabaseService: SupabaseService
+  ) { }
+
+  async ngOnInit() {
+    await this.loadUserData();
+  }
+
+  private async loadUserData() {
+    const user = this.authService.currentUser;
+    if (!user) return;
+
+    try {
+      // Obtener perfil actualizado
+      const { data: profile } = await this.supabaseService.getUserProfile(user.id);
+      if (profile) {
+        this.userLevel = profile.level || 'A1';
+        this.progressData.level = this.userLevel;
+      }
+
+      // Verificar si ha completado el diagnóstico
+      const { data: quizzes } = await this.supabaseService.getUserQuizzes(user.id, 1);
+      this.hasCompletedDiagnostic = quizzes && quizzes.some(q => q.type === 'diagnostic');
+      
+    } catch (error) {
+      console.error('Error cargando datos del usuario:', error);
+    }
+  }
 
   segmentChanged(event: any) {
     this.selectedTab = event.detail.value;

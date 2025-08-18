@@ -228,9 +228,16 @@ export class SupabaseService {
 
   // Gestión de quizzes
   async saveQuizResult(quizData: Database['public']['Tables']['quizzes']['Insert']) {
+    console.log('💾 Guardando resultado de quiz:', quizData);
     const { data, error } = await this.supabase
       .from('quizzes')
       .insert(quizData);
+
+    if (error) {
+      console.error('❌ Error guardando quiz:', error);
+    } else {
+      console.log('✅ Quiz guardado exitosamente');
+    }
 
     return { data, error };
   }

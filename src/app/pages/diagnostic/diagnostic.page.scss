@@ -19,3 +19,84 @@ mat-radio-button:hover {
 .cambridge-card {
   padding: 16px;
 }
+
+.question-header {
+  .question-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    
+    ion-chip {
+      font-size: 0.75rem;
+    }
+  }
+}
+
+.results-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.results-card {
+  padding: 2rem;
+}
+
+.results-icon {
+  ion-icon {
+    font-size: 4rem;
+  }
+}
+
+.score-display {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.score-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ion-color-primary), var(--ion-color-secondary));
+  color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.score-number {
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.score-percentage {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.level-result {
+  .level-chip {
+    font-size: 1.25rem;
+    padding: 0.5rem 1rem;
+    
+    ion-label {
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+  }
+  
+  .level-description {
+    color: var(--ion-color-medium);
+    font-style: italic;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+.action-buttons {
+  max-width: 300px;
+  margin: 0 auto;
+}

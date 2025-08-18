@@ -12,48 +12,135 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="cambridge-container">
-    <h1 class="text-2xl font-bold text-primary-800 dark:text-primary-200 mb-4">Cambridge English Diagnostic Test</h1>
-    <p class="text-gray-600 dark:text-gray-300 mb-6">This diagnostic test will help determine your current English level. Answer all questions to get your results.</p>
+    @if (!isCompleted) {
+      <h1 class="text-2xl font-bold text-primary-800 dark:text-primary-200 mb-4">Cambridge English Diagnostic Test</h1>
+      <p class="text-gray-600 dark:text-gray-300 mb-6">This diagnostic test will help determine your current English level. Answer all questions to get your results.</p>
 
-    <mat-progress-bar mode="determinate" [value]="progressPercentage" class="mb-6"></mat-progress-bar>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Question {{ currentStep + 1 }} of {{ totalSteps }}</p>
+      <mat-progress-bar mode="determinate" [value]="progressPercentage" class="mb-6"></mat-progress-bar>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Question {{ currentStep + 1 }} of {{ totalSteps }}</p>
 
-    <form [formGroup]="diagnosticForm">
-      <mat-card class="cambridge-card mb-6">
-        <mat-card-content>
-          <h2 class="text-lg font-medium mb-4">{{ questions[currentStep].text }}</h2>
+      <form [formGroup]="diagnosticForm">
+        <mat-card class="cambridge-card mb-6">
+          <mat-card-content>
+            <div class="question-header mb-4">
+              <h2 class="text-lg font-medium">{{ questions[currentStep].text }}</h2>
+              <div class="question-meta">
+                <ion-chip color="primary" outline="true">
+                  <ion-label>{{ questions[currentStep].skill | titlecase }}</ion-label>
+                </ion-chip>
+                <ion-chip color="secondary" outline="true">
+                  <ion-label>Level {{ questions[currentStep].level }}</ion-label>
+                </ion-chip>
+              </div>
+            </div>
 
-          <mat-radio-group [formControlName]="'question' + questions[currentStep].id" class="flex flex-col gap-3">
-            @for (option of questions[currentStep].options; track option) {
-              <mat-radio-button [value]="option.value" class="mb-2">
-                {{ option.text }}
-              </mat-radio-button>
-            }
-          </mat-radio-group>
-        </mat-card-content>
-      </mat-card>
+            <mat-radio-group [formControlName]="'question' + questions[currentStep].id" class="flex flex-col gap-3">
+              @for (option of questions[currentStep].options; track option) {
+                <mat-radio-button [value]="option.value" class="mb-2">
+                  {{ option.text }}
+                </mat-radio-button>
+              }
+            </mat-radio-group>
+          </mat-card-content>
+        </mat-card>
 
-      <div class="flex justify-between">
-        <ion-button (click)="previousStep()" [disabled]="currentStep === 0" color="medium">
-          Previous
-        </ion-button>
-
-        @if (currentStep < totalSteps - 1) {
-          <ion-button (click)="nextStep()"
-            [disabled]="!diagnosticForm.get('question' + questions[currentStep].id)?.valid"
-            color="primary">
-            Next
+        <div class="flex justify-between">
+          <ion-button (click)="previousStep()" [disabled]="currentStep === 0" color="medium">
+            Previous
           </ion-button>
-        }
 
-        @if (currentStep === totalSteps - 1) {
-          <ion-button (click)="submitDiagnostic()"
-            [disabled]="!diagnosticForm.valid"
-            color="success">
-            Submit
-          </ion-button>
-        }
+          @if (currentStep < totalSteps - 1) {
+            <ion-button (click)="nextStep()"
+              [disabled]="!diagnosticForm.get('question' + questions[currentStep].id)?.valid"
+              color="primary">
+              Next
+            </ion-button>
+          }
+
+          @if (currentStep === totalSteps - 1) {
+            <ion-button (click)="submitDiagnostic()"
+              [disabled]="!diagnosticForm.valid || isLoading"
+              color="success">
+              @if (isLoading) {
+                <ion-spinner name="crescent" slot="start"></ion-spinner>
+                Processing...
+              }
+              @if (!isLoading) {
+                Submit Test
+              }
+            </ion-button>
+          }
+        </div>
+      </form>
+    }
+
+    <!-- Results Screen -->
+    @if (isCompleted) {
+      <div class="results-container">
+        <mat-card class="cambridge-card results-card">
+          <mat-card-content class="text-center">
+            <div class="results-icon mb-4">
+              <ion-icon name="trophy" color="warning" class="text-6xl"></ion-icon>
+            </div>
+            
+            <h1 class="text-3xl font-bold mb-2">¡Test Completado!</h1>
+            <p class="text-gray-600 mb-6">Aquí están tus resultados del test diagnóstico</p>
+            
+            <div class="score-display mb-6">
+              <div class="score-circle">
+                <span class="score-number">{{ finalScore }}/{{ totalSteps }}</span>
+                <span class="score-percentage">{{ ((finalScore / totalSteps) * 100) | number:'1.0-0' }}%</span>
+              </div>
+            </div>
+            
+            <div class="level-result mb-6">
+              <h2 class="text-xl font-semibold mb-2">Tu nivel determinado:</h2>
+              <ion-chip color="primary" class="level-chip">
+                <ion-label class="text-lg font-bold">{{ determinedLevel }}</ion-label>
+              </ion-chip>
+              <p class="level-description mt-2">
+                @switch (determinedLevel) {
+                  @case ('A1') {
+                    <span>Principiante - Puedes entender y usar expresiones familiares de uso cotidiano.</span>
+                  }
+                  @case ('A2') {
+                    <span>Básico - Puedes comunicarte en tareas simples y rutinarias.</span>
+                  }
+                  @case ('B1') {
+                    <span>Intermedio - Puedes desenvolverte en la mayoría de situaciones cotidianas.</span>
+                  }
+                  @case ('B2') {
+                    <span>Intermedio Alto - Puedes interactuar con fluidez y naturalidad.</span>
+                  }
+                  @case ('C1') {
+                    <span>Avanzado - Puedes expresarte de forma fluida y espontánea.</span>
+                  }
+                  @case ('C2') {
+                    <span>Maestría - Puedes comprender prácticamente todo lo que oyes o lees.</span>
+                  }
+                }
+              </p>
+            </div>
+            
+            <div class="action-buttons">
+              <ion-button (click)="goToDashboard()" expand="block" color="primary" class="mb-3">
+                <ion-icon name="home" slot="start"></ion-icon>
+                Ir al Dashboard
+              </ion-button>
+              
+              <ion-button (click)="goToStats()" expand="block" fill="outline" color="secondary" class="mb-3">
+                <ion-icon name="stats-chart" slot="start"></ion-icon>
+                Ver Estadísticas Detalladas
+              </ion-button>
+              
+              <ion-button (click)="restartTest()" expand="block" fill="clear" color="medium">
+                <ion-icon name="refresh" slot="start"></ion-icon>
+                Repetir Test
+              </ion-button>
+            </div>
+          </mat-card-content>
+        </mat-card>
       </div>
-    </form>
+    }
   </div>
 </ion-content>

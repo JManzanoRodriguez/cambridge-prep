@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { ToastController } from '@ionic/angular';
 
 import { IonicModule } from '@ionic/angular';
 import { MatCardModule } from '@angular/material/card';
@@ -10,6 +11,10 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+
+import { AuthService } from '../../core/services/auth.service';
+import { SupabaseService } from '../../core/services/supabase.service';
 
 @Component({
   selector: 'app-diagnostic',
@@ -17,6 +22,7 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrls: ['./diagnostic.page.scss'],
   standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
@@ -33,9 +39,16 @@ export class DiagnosticPage {
   diagnosticForm: FormGroup = this.formBuilder.group({});
   currentStep = 0;
   totalSteps = 5;
+  isLoading = false;
+  isCompleted = false;
+  finalScore = 0;
+  determinedLevel = '';
+  
   questions = [
     {
       id: 1,
+      level: 'A1',
+      skill: 'grammar',
       text: 'Choose the correct option to complete the sentence: "She _____ to the store yesterday."',
       options: [
         { value: 'go', text: 'go' },
@@ -47,6 +60,8 @@ export class DiagnosticPage {
     },
     {
       id: 2,
+      level: 'A2',
+      skill: 'grammar',
       text: 'Which sentence is grammatically correct?',
       options: [
         { value: 'a', text: 'I have been to Paris last year.' },
@@ -58,6 +73,8 @@ export class DiagnosticPage {
     },
     {
       id: 3,
+      level: 'B1',
+      skill: 'vocabulary',
       text: 'Choose the correct word to complete the sentence: "The book is _____ the table."',
       options: [
         { value: 'in', text: 'in' },
@@ -69,6 +86,8 @@ export class DiagnosticPage {
     },
     {
       id: 4,
+      level: 'B1',
+      skill: 'grammar',
       text: 'What is the past participle of "speak"?',
       options: [
         { value: 'speak', text: 'speak' },
@@ -80,6 +99,8 @@ export class DiagnosticPage {
     },
     {
       id: 5,
+      level: 'B2',
+      skill: 'grammar',
       text: 'Choose the correct conditional sentence:',
       options: [
         { value: 'a', text: 'If I will see him, I will tell him.' },
@@ -93,7 +114,10 @@ export class DiagnosticPage {
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private toastController: ToastController,
+    private authService: AuthService,
+    private supabaseService: SupabaseService
   ) {
     this.diagnosticForm = this.formBuilder.group({});
     this.questions.forEach(question => {
@@ -113,24 +137,149 @@ export class DiagnosticPage {
     }
   }
 
-  submitDiagnostic() {
+  async submitDiagnostic() {
     if (this.diagnosticForm.valid) {
-      // Calculate score
-      let score = 0;
+      this.isLoading = true;
+      
+      // Calcular puntuación y nivel
+      const results = this.calculateResults();
+      this.finalScore = results.score;
+      this.determinedLevel = results.level;
+      
+      // Guardar en base de datos
+      await this.saveDiagnosticResults(results);
+      
+      // Actualizar perfil del usuario
+      await this.updateUserLevel(results.level);
+      
+      this.isCompleted = true;
+      this.isLoading = false;
+      
+      await this.presentToast(`¡Test completado! Tu nivel es ${results.level}`, 'success');
+    }
+  }
+  
+  private calculateResults() {
+    let score = 0;
+    const skillScores: { [key: string]: { correct: number; total: number } } = {};
+    
+    this.questions.forEach(question => {
       this.questions.forEach(question => {
         const control = this.diagnosticForm.get(`question${question.id}`);
-        if (control && control.value === question.correctAnswer) {
+      const isCorrect = control && control.value === question.correctAnswer;
+      
+      if (isCorrect) {
           score++;
         }
+      
+      // Agrupar por habilidad
+      if (!skillScores[question.skill]) {
+        skillScores[question.skill] = { correct: 0, total: 0 };
+      }
+      skillScores[question.skill].total++;
+      if (isCorrect) {
+        skillScores[question.skill].correct++;
+      }
+    });
+    
+    // Determinar nivel basado en puntuación
+    const percentage = (score / this.totalSteps) * 100;
+    let level = 'A1';
+    
+    if (percentage >= 90) level = 'C2';
+    else if (percentage >= 80) level = 'C1';
+    else if (percentage >= 70) level = 'B2';
+    else if (percentage >= 60) level = 'B1';
+    else if (percentage >= 40) level = 'A2';
+    else level = 'A1';
+    
+    return {
+      score,
+      percentage,
+      level,
+      skillScores,
+      answers: this.questions.map(q => ({
+        questionId: q.id,
+        selectedAnswer: this.diagnosticForm.get(`question${q.id}`)?.value,
+        correctAnswer: q.correctAnswer,
+        isCorrect: this.diagnosticForm.get(`question${q.id}`)?.value === q.correctAnswer,
+        skill: q.skill,
+        level: q.level
+      }))
+    };
+  }
+  
+  private async saveDiagnosticResults(results: any) {
+    const user = this.authService.currentUser;
+    if (!user) return;
+    
+    try {
+      const { error } = await this.supabaseService.saveQuizResult({
+        user_id: user.id,
+        type: 'diagnostic',
+        level: results.level,
+        questions: this.questions,
+        answers: results.answers,
+        score: results.score,
+        total_questions: this.totalSteps,
+        time_spent: 0, // TODO: Implementar timer
+        completed_at: new Date().toISOString()
       });
       
-      // Navigate to results with score
-      this.router.navigate(['/stats'], { 
-        queryParams: { 
-          diagnosticScore: score,
-          totalQuestions: this.totalSteps
-        } 
+      if (error) {
+        console.error('Error guardando resultados:', error);
+      }
+    } catch (error) {
+      console.error('Error guardando resultados:', error);
+    }
+  }
+  
+  private async updateUserLevel(level: string) {
+    const user = this.authService.currentUser;
+    if (!user) return;
+    
+    try {
+      const { error } = await this.supabaseService.updateUserProfile(user.id, {
+        level: level
       });
+      
+      if (error) {
+        console.error('Error actualizando nivel:', error);
+      }
+    } catch (error) {
+      console.error('Error actualizando nivel:', error);
+    }
+  }
+  
+  async presentToast(message: string, color: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: 'top'
+    });
+    await toast.present();
+  }
+  
+  restartTest() {
+    this.currentStep = 0;
+    this.isCompleted = false;
+    this.finalScore = 0;
+    this.determinedLevel = '';
+    
+    // Reset form
+    this.diagnosticForm = this.formBuilder.group({});
+    this.questions.forEach(question => {
+      this.diagnosticForm.addControl(`question${question.id}`, this.formBuilder.control('', Validators.required));
+    });
+  }
+  
+  goToStats() {
+    this.router.navigate(['/stats']);
+  }
+  
+  goToDashboard() {
+    this.router.navigate(['/dashboard']);
     }
   }
 

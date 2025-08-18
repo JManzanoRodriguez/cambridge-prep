@@ -7,10 +7,20 @@
         <h1 class="welcome-title">¡Bienvenido de nuevo!</h1>
         <p class="welcome-subtitle">Continúa tu preparación para el examen Cambridge English</p>
       </div>
-      <ion-button routerLink="/diagnostic" expand="block" class="diagnostic-button">
-        Realizar Test Diagnóstico
-        <ion-icon name="arrow-forward" slot="end"></ion-icon>
-      </ion-button>
+      @if (!hasCompletedDiagnostic) {
+        <ion-button routerLink="/diagnostic" expand="block" class="diagnostic-button" color="warning">
+          <ion-icon name="brain" slot="start"></ion-icon>
+          Realizar Test Diagnóstico
+          <ion-icon name="arrow-forward" slot="end"></ion-icon>
+        </ion-button>
+      }
+      @if (hasCompletedDiagnostic) {
+        <ion-button routerLink="/quiz" expand="block" class="diagnostic-button" color="primary">
+          <ion-icon name="book" slot="start"></ion-icon>
+          Comenzar Quiz Personalizado
+          <ion-icon name="arrow-forward" slot="end"></ion-icon>
+        </ion-button>
+      }
     </div>
 
     <!-- Progress Overview -->
