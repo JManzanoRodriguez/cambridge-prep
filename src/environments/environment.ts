@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000/api',
-  openaiApiKey: '', // Agregar tu API key de OpenAI aquí
+  openaiApiKey: '', // Configurar con tu API key de OpenAI cuando tengas cuota disponible
   appVersion: '1.0.0',
   appName: 'Cambridge Prep App',
   tokenExpirationTime: 3600, // segundos (1 hora)
