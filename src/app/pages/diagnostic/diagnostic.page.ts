@@ -118,21 +118,6 @@ export class DiagnosticPage {
     const controlName = `question${currentQuestion.id}`;
     const control = this.diagnosticForm.get(controlName);
     const hasValue = control?.value && control.value !== '';
-
-    console.log('🔍 Debugging pregunta actual:', {
-      currentStep: this.currentStep,
-      questionId: currentQuestion.id,
-      controlName: controlName,
-      controlValue: control?.value,
-      hasValue: hasValue
-    });
-
-    if (hasValue) {
-      console.log('🟢 Botón habilitado - Pregunta:', controlName, 'Valor:', control?.value);
-    } else {
-      console.log('🔴 Botón deshabilitado - Pregunta:', controlName, 'Valor:', control?.value);
-    }
-
     return hasValue;
   }
 
@@ -173,21 +158,11 @@ export class DiagnosticPage {
     const question = this.questions[stepIndex];
     const controlName = `question${question.id}`;
 
-    console.log('🎯 Respuesta seleccionada:', {
-      pregunta: question.id,
-      control: controlName,
-      valor: selectedValue
-    });
-
     // Actualizar el FormControl
     this.diagnosticForm.get(controlName)?.setValue(selectedValue);
 
     // Marcar como touched para activar validación
     this.diagnosticForm.get(controlName)?.markAsTouched();
-
-    // Verificar que se actualizó
-    const updatedValue = this.diagnosticForm.get(controlName)?.value;
-    console.log('✅ Valor actualizado:', updatedValue);
   }
 
   async submitDiagnostic() {
