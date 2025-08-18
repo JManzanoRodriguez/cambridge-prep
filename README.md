@@ -147,6 +147,14 @@ ionic serve
 3. Vincula tu proyecto: `supabase link --project-ref tu-project-ref`
 4. Ejecuta las migraciones: `supabase db push`
 
+### 4.1. Arreglar políticas RLS (si hay problemas de permisos)
+Si ves errores como "new row violates row-level security policy", ejecuta esta migración adicional:
+
+1. Ve a tu Dashboard de Supabase
+2. Ve a **SQL Editor**
+3. Ejecuta el contenido del archivo `supabase/migrations/fix_user_creation_policy.sql`
+4. O alternativamente, ejecuta: `supabase db push` para aplicar todas las migraciones
+
 ### 5. Configurar Edge Function para IA
 1. En tu proyecto de Supabase, ve a "Edge Functions"
 2. Crea una nueva función llamada `generate-quiz`

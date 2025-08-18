@@ -165,6 +165,14 @@ export class SupabaseService {
   // Gestión de usuarios
   private async createUserProfile(userId: string, email: string, name: string) {
     console.log('🔨 Creando perfil de usuario:', { userId, email, name });
+    
+    // Verificar que tenemos una sesión activa
+    const { data: { session } } = await this.supabase.auth.getSession();
+    if (!session) {
+      console.error('❌ No hay sesión activa para crear perfil');
+      return { data: null, error: { message: 'No hay sesión activa' } };
+    }
+    
     const { data, error } = await this.supabase
       .from('users')
       .insert({
@@ -177,6 +185,12 @@ export class SupabaseService {
 
     if (error) {
       console.error('❌ Error creando perfil:', error);
+      console.error('❌ Detalles del error:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
     } else {
       console.log('✅ Perfil creado exitosamente:', data);
     }
