@@ -1,29 +1,41 @@
 
 <ion-content [fullscreen]="true">
+  <!-- Pull to refresh -->
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <div class="dashboard-container">
     <!-- Welcome Section -->
     <div class="welcome-section">
       <div>
-        <h1 class="welcome-title">¡Bienvenido de nuevo!</h1>
-        <p class="welcome-subtitle">Continúa tu preparación para el examen Cambridge English</p>
+        <h1 class="welcome-title">{{ welcomeMessage }}</h1>
+        <p class="welcome-subtitle">{{ welcomeSubtitle }}</p>
       </div>
-      @if (!hasCompletedDiagnostic) {
-        <ion-button routerLink="/diagnostic" expand="block" class="diagnostic-button" color="warning">
-          <ion-icon name="brain" slot="start"></ion-icon>
-          Realizar Test Diagnóstico
-          <ion-icon name="arrow-forward" slot="end"></ion-icon>
-        </ion-button>
-      }
-      @if (hasCompletedDiagnostic) {
-        <ion-button routerLink="/quiz" expand="block" class="diagnostic-button" color="primary">
-          <ion-icon name="book" slot="start"></ion-icon>
-          Comenzar Quiz Personalizado
+      
+      @if (!isLoading) {
+        <ion-button 
+          [routerLink]="primaryButtonRoute" 
+          expand="block" 
+          class="diagnostic-button" 
+          [color]="shouldShowDiagnosticButton ? 'warning' : 'primary'">
+          <ion-icon [name]="shouldShowDiagnosticButton ? 'brain' : 'book'" slot="start"></ion-icon>
+          {{ primaryButtonText }}
           <ion-icon name="arrow-forward" slot="end"></ion-icon>
         </ion-button>
       }
     </div>
 
+    <!-- Loading State -->
+    @if (isLoading) {
+      <div class="loading-container">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Cargando tus datos...</p>
+      </div>
+    }
+
     <!-- Progress Overview -->
+    @if (!isLoading) {
     <ion-grid class="progress-overview">
       <ion-row>
         <ion-col size="12" size-md="3">
@@ -33,10 +45,10 @@
             </ion-card-header>
             <ion-card-content>
               <div class="stat-value">
-                <ion-icon name="ribbon" color="primary"></ion-icon>
+                <ion-icon name="ribbon" [color]="levelColor"></ion-icon>
                 <span>{{ progressData.level }}</span>
               </div>
-              <p class="stat-description">First Certificate</p>
+              <p class="stat-description">{{ levelDescription }}</p>
             </ion-card-content>
           </ion-card>
         </ion-col>
@@ -87,8 +99,10 @@
         </ion-col>
       </ion-row>
     </ion-grid>
+    }
 
     <!-- Main Content -->
+    @if (!isLoading) {
     <ion-grid>
       <ion-row>
         <!-- Left Column - Progress by Skill -->
@@ -96,17 +110,34 @@
           <ion-card class="skill-progress-card">
             <ion-card-header>
               <ion-card-title>Progreso por Habilidad</ion-card-title>
-              <ion-card-subtitle>Tu rendimiento en cada área del examen</ion-card-subtitle>
+              <ion-card-subtitle>
+                @if (overallProgress > 0) {
+                  <span>Progreso general: {{ overallProgress }}% - {{ getPersonalizedRecommendation() }}</span>
+                }
+                @if (overallProgress === 0) {
+                  <span>Completa algunos quizzes para ver tu progreso</span>
+                }
+              </ion-card-subtitle>
             </ion-card-header>
             <ion-card-content>
               <div class="skill-progress-container">
                 @for (skill of skillProgress; track skill) {
-                  <div class="skill-item">
+                  <div class="skill-item" (click)="showSkillDetails(skill)">
                     <div class="skill-header">
                       <span class="skill-name">{{ skill.name }}</span>
-                      <span class="skill-value">{{ skill.value }}%</span>
+                      <span class="skill-value" [style.color]="'var(--ion-color-' + getSkillColor(skill.value) + ')'">
+                        @if (skill.value > 0) {
+                          <span>{{ skill.value }}%</span>
+                        }
+                        @if (skill.value === 0) {
+                          <span>Sin datos</span>
+                        }
+                      </span>
                     </div>
-                    <ion-progress-bar [value]="skill.value / 100" color="primary"></ion-progress-bar>
+                    <ion-progress-bar 
+                      [value]="skill.value / 100" 
+                      [color]="getSkillColor(skill.value)">
+                    </ion-progress-bar>
                   </div>
                 }
               </div>
@@ -173,10 +204,17 @@
                     </div>
                   </div>
                 }
+                @if (recentActivities.length === 0) {
+                  <div class="no-activities">
+                    <ion-icon name="document-text-outline" size="large"></ion-icon>
+                    <p>No hay actividades recientes</p>
+                    <p class="text-sm text-gray-500">Completa algunos quizzes para ver tu historial</p>
+                  </div>
+                }
               </div>
             </ion-card-content>
             <ion-card-content>
-              <ion-button routerLink="/activity" expand="block" fill="clear">
+              <ion-button routerLink="/stats" expand="block" fill="clear">
                 Ver Todo el Historial
               </ion-button>
             </ion-card-content>
@@ -345,5 +383,6 @@
         </ion-col>
       </ion-row>
     </ion-grid>
+    }
   </div>
 </ion-content>
