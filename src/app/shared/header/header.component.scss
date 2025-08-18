@@ -67,6 +67,16 @@ ion-toolbar {
   height: 32px;
 }
 
+.avatar-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --border-radius: 50%;
+}
+
+.avatar-button:hover {
+  --background: rgba(var(--ion-color-primary-rgb), 0.1);
+}
+
 @media (max-width: 480px) {
   .profile-avatar {
     width: 28px;

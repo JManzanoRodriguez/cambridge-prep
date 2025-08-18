@@ -34,46 +34,47 @@
 
         <!-- User Menu (if authenticated) -->
         @if (isAuthenticated) {
-          <ion-button id="user-menu-trigger" fill="clear">
+          <ion-button id="user-menu-trigger" fill="clear" class="avatar-button">
             <ion-avatar slot="icon-only" class="profile-avatar">
               <img [alt]="currentUser?.name || 'User'" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
             </ion-avatar>
           </ion-button>
-        }
-        <ion-popover trigger="user-menu-trigger" [dismissOnSelect]="true">
-          <ng-template>
-            <ion-content>
-              <ion-list lines="none">
-                @if (currentUser) {
+          
+          <ion-popover trigger="user-menu-trigger" [dismissOnSelect]="true">
+            <ng-template>
+              <ion-content>
+                <ion-list lines="none">
+                  @if (currentUser) {
+                    <ion-item-divider>
+                      <ion-label>{{ currentUser.name }}</ion-label>
+                    </ion-item-divider>
+                    <ion-item detail="false">
+                      <ion-icon name="mail" slot="start"></ion-icon>
+                      <ion-label class="ion-text-wrap">{{ currentUser.email }}</ion-label>
+                    </ion-item>
+                    <ion-item-divider></ion-item-divider>
+                  }
                   <ion-item-divider>
-                    <ion-label>{{ currentUser.name }}</ion-label>
+                    <ion-label>Mi Cuenta</ion-label>
                   </ion-item-divider>
-                  <ion-item detail="false">
-                    <ion-icon name="mail" slot="start"></ion-icon>
-                    <ion-label class="ion-text-wrap">{{ currentUser.email }}</ion-label>
+                  <ion-item [routerLink]="['/profile']" detail="false" button>
+                    <ion-icon name="person" slot="start"></ion-icon>
+                    <ion-label>Perfil</ion-label>
+                  </ion-item>
+                  <ion-item [routerLink]="['/subscription']" detail="false" button>
+                    <ion-icon name="ribbon" slot="start"></ion-icon>
+                    <ion-label>Suscripción</ion-label>
                   </ion-item>
                   <ion-item-divider></ion-item-divider>
-                }
-                <ion-item-divider>
-                  <ion-label>Mi Cuenta</ion-label>
-                </ion-item-divider>
-                <ion-item [routerLink]="['/profile']" detail="false" button>
-                  <ion-icon name="person" slot="start"></ion-icon>
-                  <ion-label>Perfil</ion-label>
-                </ion-item>
-                <ion-item [routerLink]="['/subscription']" detail="false" button>
-                  <ion-icon name="ribbon" slot="start"></ion-icon>
-                  <ion-label>Suscripción</ion-label>
-                </ion-item>
-                <ion-item-divider></ion-item-divider>
-                <ion-item (click)="logout()" detail="false" button class="logout-item">
-                  <ion-icon name="log-out" slot="start"></ion-icon>
-                  <ion-label>Cerrar Sesión</ion-label>
-                </ion-item>
-              </ion-list>
-            </ion-content>
-          </ng-template>
-        </ion-popover>
+                  <ion-item (click)="logout()" detail="false" button class="logout-item">
+                    <ion-icon name="log-out" slot="start"></ion-icon>
+                    <ion-label>Cerrar Sesión</ion-label>
+                  </ion-item>
+                </ion-list>
+              </ion-content>
+            </ng-template>
+          </ion-popover>
+        }
 
         <!-- Login Button (if not authenticated) -->
         @if (!isAuthenticated && currentPath !== '/auth') {
