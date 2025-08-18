@@ -11,34 +11,48 @@
 
 <ion-content [fullscreen]="true" class="ion-padding">
   <div class="cambridge-container">
-    <h1 class="text-2xl font-bold text-primary-800 dark:text-primary-200 mb-4">Cambridge English Practice Quiz</h1>
+    <h1 class="text-2xl font-bold text-primary-800 dark:text-primary-200 mb-4">
+      Cambridge English Practice Quiz
+    </h1>
 
     <!-- Quiz Setup -->
     @if (!quizStarted && !quizCompleted) {
       <div>
-        <p class="text-gray-600 dark:text-gray-300 mb-6">Customize your practice quiz by selecting the type and difficulty level.</p>
-        <form [formGroup]="quizForm" (ngSubmit)="startQuiz()">
+        <p class="text-gray-600 dark:text-gray-300 mb-6">
+          Personaliza tu quiz de práctica seleccionando el tipo y nivel de dificultad.
+        </p>
+        
+        @if (isLoading) {
+          <div class="loading-container">
+            <ion-spinner name="crescent"></ion-spinner>
+            <p>Preparando tu quiz personalizado...</p>
+          </div>
+        }
+        
+        @if (!isLoading) {
+        <form [formGroup]="setupForm" (ngSubmit)="startQuiz()">
           <mat-card class="cambridge-card mb-6">
             <mat-card-content>
               <div class="mb-6">
-                <h3 class="text-lg font-medium mb-3">Quiz Type</h3>
+                <h3 class="text-lg font-medium mb-3">Tipo de Quiz</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                   @for (type of quizTypes; track type) {
                     <div
                       class="quiz-type-card p-4 rounded-lg cursor-pointer"
-                      [class.selected]="quizForm.get('quizType')?.value === type.id"
-                      (click)="quizForm.get('quizType')?.setValue(type.id)">
+                      [class.selected]="setupForm.get('quizType')?.value === type.id"
+                      (click)="setupForm.get('quizType')?.setValue(type.id)">
                       <ion-icon [name]="type.icon" class="text-3xl mb-2"></ion-icon>
                       <p class="font-medium">{{ type.name }}</p>
                     </div>
                   }
                 </div>
               </div>
+              
               <div>
-                <h3 class="text-lg font-medium mb-3">Difficulty Level</h3>
+                <h3 class="text-lg font-medium mb-3">Nivel de Dificultad</h3>
                 <mat-form-field appearance="fill" class="w-full">
-                  <mat-label>Select difficulty</mat-label>
-                  <mat-select formControlName="difficultyLevel">
+                  <mat-label>Selecciona el nivel</mat-label>
+                  <mat-select formControlName="level">
                     @for (level of difficultyLevels; track level) {
                       <mat-option [value]="level.id">
                         {{ level.name }}
@@ -47,105 +61,214 @@
                   </mat-select>
                 </mat-form-field>
               </div>
+              
+              <div>
+                <h3 class="text-lg font-medium mb-3">Número de Preguntas</h3>
+                <mat-form-field appearance="fill" class="w-full">
+                  <mat-label>Cantidad de preguntas</mat-label>
+                  <mat-select formControlName="numberOfQuestions">
+                    <mat-option [value]="3">3 preguntas (rápido)</mat-option>
+                    <mat-option [value]="5">5 preguntas (recomendado)</mat-option>
+                    <mat-option [value]="10">10 preguntas (completo)</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
             </mat-card-content>
           </mat-card>
+          
           <div class="flex justify-center">
-            <ion-button type="submit" [disabled]="!quizForm.valid" color="primary" size="large">
-              Start Quiz
+            <ion-button type="submit" [disabled]="!setupForm.valid" color="primary" size="large">
+              <ion-icon name="play" slot="start"></ion-icon>
+              Comenzar Quiz
             </ion-button>
           </div>
         </form>
+        }
       </div>
     }
 
     <!-- Quiz Questions -->
     @if (quizStarted && !quizCompleted) {
       <div>
-        @if (isGenerating) {
-          <div class="generating-container">
-            <ion-spinner name="crescent"></ion-spinner>
-            <p>Generando preguntas personalizadas con IA...</p>
-            <p class="text-sm text-gray-500">Esto puede tomar unos segundos</p>
+        <!-- Quiz Header -->
+        <div class="quiz-header mb-6">
+          <div class="quiz-info">
+            <h2 class="text-xl font-bold">{{ quizTypes.find(t => t.id === quizConfig.type)?.name }} Quiz</h2>
+            <p class="text-gray-600">Nivel {{ quizConfig.level }} • {{ totalSteps }} preguntas</p>
           </div>
-        }
-        @if (!isGenerating && currentQuestion) {
-        <mat-progress-bar mode="determinate" [value]="progressPercentage" class="mb-6"></mat-progress-bar>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Question {{ currentStep + 1 }} of {{ totalSteps }}</p>
+          
+          <div class="timer-container">
+            <div class="timer-display" [class]="timerClass">
+              <ion-icon name="time-outline"></ion-icon>
+              <span>{{ timeLeftFormatted }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <mat-progress-bar mode="determinate" [value]="progressPercentage" class="mb-4"></mat-progress-bar>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          Pregunta {{ currentStep + 1 }} de {{ totalSteps }}
+        </p>
+        
+        <!-- Current Question -->
+        @if (currentQuestion) {
         <form [formGroup]="quizForm">
           <mat-card class="cambridge-card mb-6">
             <mat-card-content>
-              <h2 class="text-lg font-medium mb-4">{{ currentQuestion.question || currentQuestion.text }}</h2>
-              
-              @if (aiQuestions.length > 0) {
-                <!-- Preguntas generadas por IA -->
-                <mat-radio-group [formControlName]="currentQuestionControlName" class="flex flex-col gap-3">
-                  @for (option of currentQuestion.options; track option) {
-                    <mat-radio-button [value]="option.id" class="mb-2">
-                      {{ option.text }}
-                    </mat-radio-button>
-                  }
-                </mat-radio-group>
+              <div class="question-header mb-4">
+                <h3 class="text-lg font-medium mb-2">{{ currentQuestion.text }}</h3>
                 
-                @if (currentQuestion.topic) {
-                  <div class="question-metadata mt-4">
-                    <ion-chip color="secondary" outline="true">
-                      <ion-icon name="bookmark-outline"></ion-icon>
-                      <ion-label>{{ currentQuestion.topic }}</ion-label>
-                    </ion-chip>
-                    <ion-chip color="tertiary" outline="true">
-                      <ion-icon name="time-outline"></ion-icon>
-                      <ion-label>~{{ currentQuestion.estimatedTime }}s</ion-label>
-                    </ion-chip>
-                    <ion-chip color="warning">
-                      <ion-icon name="flask-outline"></ion-icon>
-                      <ion-label>Modo Demo</ion-label>
-                    </ion-chip>
+                <div class="question-metadata">
+                  <ion-chip color="secondary" outline="true">
+                    <ion-icon name="bookmark-outline"></ion-icon>
+                    <ion-label>{{ currentQuestion.topic }}</ion-label>
+                  </ion-chip>
+                  <ion-chip [color]="currentQuestion.difficulty === 'easy' ? 'success' : currentQuestion.difficulty === 'medium' ? 'warning' : 'danger'" outline="true">
+                    <ion-icon name="speedometer-outline"></ion-icon>
+                    <ion-label>{{ currentQuestion.difficulty | titlecase }}</ion-label>
+                  </ion-chip>
+                </div>
+              </div>
+              
+              <!-- Options -->
+              <div class="options-container">
+                @for (option of currentQuestion.options; track option) {
+                  <div
+                    class="quiz-option"
+                    [class.selected]="quizForm.get(currentQuestionControlName)?.value === option.id"
+                    (click)="quizForm.get(currentQuestionControlName)?.setValue(option.id)">
+                    <div class="option-content">
+                      <div class="option-identifier">{{ option.id.toUpperCase() }}</div>
+                      <div class="option-text">{{ option.text }}</div>
+                    </div>
                   </div>
                 }
-              }
-              
-              @if (mockQuestions.length > 0) {
-                <!-- Preguntas mock (fallback) -->
-              <mat-radio-group [formControlName]="currentQuestionControlName" class="flex flex-col gap-3">
-                @for (option of currentQuestion.options; track option) {
-                  <mat-radio-button [value]="option.value" class="mb-2">
-                    {{ option.text }}
-                  </mat-radio-button>
-                }
-              </mat-radio-group>
-              }
+              </div>
             </mat-card-content>
           </mat-card>
+          
+          <!-- Navigation Buttons -->
           <div class="flex justify-between">
-            <ion-button (click)="previousStep()" [disabled]="currentStep === 0" color="medium">
-              Previous
+            <ion-button 
+              (click)="previousStep()" 
+              [disabled]="currentStep === 0" 
+              color="medium"
+              fill="outline">
+              <ion-icon name="chevron-back" slot="start"></ion-icon>
+              Anterior
             </ion-button>
+            
             @if (currentStep < totalSteps - 1) {
-              <ion-button (click)="nextStep()"
+              <ion-button 
+                (click)="nextStep()"
                 [disabled]="!isCurrentQuestionAnswered"
                 color="primary">
-                Next
+                Siguiente
+                <ion-icon name="chevron-forward" slot="end"></ion-icon>
               </ion-button>
             }
+            
             @if (currentStep === totalSteps - 1) {
-              <ion-button (click)="submitQuiz()"
-                [disabled]="!quizForm.valid"
+              <ion-button 
+                (click)="submitQuiz()"
+                [disabled]="!isCurrentQuestionAnswered || isSubmitting"
                 color="success">
-                Submit
+                @if (isSubmitting) {
+                  <ion-spinner name="crescent" slot="start"></ion-spinner>
+                  Enviando...
+                }
+                @if (!isSubmitting) {
+                  <ion-icon name="checkmark" slot="start"></ion-icon>
+                  Finalizar Quiz
+                }
               </ion-button>
             }
           </div>
         </form>
         }
+        @if (!isGenerating && currentQuestion) {
       </div>
     }
 
     <!-- Quiz Results -->
     @if (quizCompleted) {
       <div>
-        <mat-card class="cambridge-card mb-6">
-          <mat-card-content class="text-center py-6">
-            <h2 class="text-2xl font-bold mb-4">Quiz Results</h2>
+        <div class="results-container">
+          <mat-card class="cambridge-card results-card">
+            <mat-card-content class="text-center">
+              <!-- Results Header -->
+              <div class="results-header mb-6">
+                <ion-icon name="trophy" [color]="resultColor" class="results-icon"></ion-icon>
+                <h2 class="text-2xl font-bold mb-2">¡Quiz Completado!</h2>
+                <p class="text-gray-600">{{ resultMessage }}</p>
+              </div>
+              
+              <!-- Score Display -->
+              <div class="score-display mb-6">
+                <div class="score-circle" [style.--score-color]="'var(--ion-color-' + resultColor + ')'">
+                  <div class="score-content">
+                    <span class="score-number">{{ score }}%</span>
+                    <span class="score-details">{{ correctAnswers }}/{{ totalSteps }} correctas</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Quiz Info -->
+              <div class="quiz-summary mb-6">
+                <div class="summary-item">
+                  <ion-icon name="book-outline"></ion-icon>
+                  <span>{{ quizTypes.find(t => t.id === quizConfig.type)?.name }}</span>
+                </div>
+                <div class="summary-item">
+                  <ion-icon name="school-outline"></ion-icon>
+                  <span>Nivel {{ quizConfig.level }}</span>
+                </div>
+                <div class="summary-item">
+                  <ion-icon name="time-outline"></ion-icon>
+                  <span>{{ ((startTime && endTime) ? Math.round((endTime.getTime() - startTime.getTime()) / 1000 / 60) : 0) }} min</span>
+                </div>
+              </div>
+              
+              <!-- Recommendations -->
+              @if (recommendations.length > 0) {
+                <div class="recommendations mb-6">
+                  <h3 class="text-lg font-medium mb-3">Recomendaciones</h3>
+                  <div class="recommendation-list">
+                    @for (rec of recommendations; track rec) {
+                      <div class="recommendation-item">
+                        <ion-icon name="bulb-outline" color="warning"></ion-icon>
+                        <span>{{ rec }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+              
+              <!-- Action Buttons -->
+              <div class="action-buttons">
+                <ion-button (click)="restartQuiz()" color="primary" expand="block" class="mb-3">
+                  <ion-icon name="refresh" slot="start"></ion-icon>
+                  Nuevo Quiz
+                </ion-button>
+                
+                <ion-button [routerLink]="['/stats']" color="secondary" expand="block" fill="outline" class="mb-3">
+                  <ion-icon name="stats-chart" slot="start"></ion-icon>
+                  Ver Estadísticas
+                </ion-button>
+                
+                <ion-button [routerLink]="['/dashboard']" color="medium" expand="block" fill="clear">
+                  <ion-icon name="home" slot="start"></ion-icon>
+                  Volver al Dashboard
+                </ion-button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    }
+  </div>
+</ion-content>
             
             @if (aiQuestions.length > 0) {
               <div class="ai-badge mb-4">

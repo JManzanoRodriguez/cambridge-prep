@@ -1,8 +1,9 @@
 
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { ToastController } from '@ionic/angular';
 
 import { IonicModule } from '@ionic/angular';
 import { MatCardModule } from '@angular/material/card';
@@ -19,6 +20,8 @@ import { CommonModule } from '@angular/common';
 import { AIQuizService } from '../../core/services/ai-quiz.service';
 import { AIQuizRequest, AIGeneratedQuestion, AIQuizResponse } from '../../core/models/ai-quiz.model';
 import { AuthService } from '../../core/services/auth.service';
+import { SupabaseService } from '../../core/services/supabase.service';
+import { QuizService } from '../../core/services/quiz.service';
 
 @Component({
   selector: 'app-quiz',
@@ -43,21 +46,34 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class QuizPage {
   // Estados del quiz
-  quizForm: FormGroup = this.formBuilder.group({
-    quizType: ['grammar', Validators.required],
-    difficulty: ['medium', Validators.required],
-    numberOfQuestions: [10, [Validators.required, Validators.min(5), Validators.max(20)]]
-  });
+  setupForm: FormGroup;
+  quizForm: FormGroup;
   quizStarted = false;
   quizCompleted = false;
+  isLoading = false;
+  isSubmitting = false;
   currentStep = 0;
   totalSteps = 0;
   score = 0;
-  isGenerating = false;
+  correctAnswers = 0;
+  startTime: Date | null = null;
+  endTime: Date | null = null;
   
-  // Preguntas generadas por IA
-  aiQuestions: AIGeneratedQuestion[] = [];
-  currentAIQuestion: AIGeneratedQuestion | null = null;
+  // Preguntas del quiz actual
+  currentQuestions: any[] = [];
+  currentQuestion: any = null;
+  
+  // Configuración del quiz
+  quizConfig = {
+    type: 'grammar',
+    level: 'B1',
+    numberOfQuestions: 5,
+    timeLimit: 300 // 5 minutos en segundos
+  };
+  
+  // Timer
+  timeLeft = 0;
+  timerInterval: any;
   
   // Suscripciones
   private subscriptions: Subscription[] = [];
@@ -70,293 +86,464 @@ export class QuizPage {
   ];
   
   difficultyLevels = [
-    { id: 'a1', name: 'A1 - Beginner' },
-    { id: 'a2', name: 'A2 - Elementary' },
-    { id: 'b1', name: 'B1 - Intermediate' },
-    { id: 'b2', name: 'B2 - Upper Intermediate' },
-    { id: 'c1', name: 'C1 - Advanced' },
-    { id: 'c2', name: 'C2 - Proficiency' }
+    { id: 'A1', name: 'A1 - Beginner' },
+    { id: 'A2', name: 'A2 - Elementary' },
+    { id: 'B1', name: 'B1 - Intermediate' },
+    { id: 'B2', name: 'B2 - Upper Intermediate' },
+    { id: 'C1', name: 'C1 - Advanced' },
+    { id: 'C2', name: 'C2 - Proficiency' }
   ];
   
-  // Preguntas mock (fallback)
-  mockQuestions: any[] = [];
-  
-  grammarQuestions = [
-    {
-      id: 1,
-      text: 'Choose the correct form of the verb: "She _____ tennis every Sunday."',
-      options: [
-        { value: 'play', text: 'play' },
-        { value: 'plays', text: 'plays' },
-        { value: 'playing', text: 'playing' },
-        { value: 'is playing', text: 'is playing' }
+  // Bancos de preguntas mock por tipo y nivel
+  questionBanks: { [key: string]: { [key: string]: any[] } } = {
+    grammar: {
+      A1: [
+        {
+          id: 'g_a1_1',
+          text: 'Choose the correct form: "I _____ a student."',
+          options: [
+            { id: 'a', text: 'am' },
+            { id: 'b', text: 'is' },
+            { id: 'c', text: 'are' },
+            { id: 'd', text: 'be' }
+          ],
+          correctAnswer: 'a',
+          explanation: 'With "I", we always use "am" in the present tense of the verb "to be".',
+          topic: 'Verb to be',
+          difficulty: 'easy'
+        },
+        {
+          id: 'g_a1_2',
+          text: 'Complete the sentence: "She _____ tennis every Sunday."',
+          options: [
+            { id: 'a', text: 'play' },
+            { id: 'b', text: 'plays' },
+            { id: 'c', text: 'playing' },
+            { id: 'd', text: 'is play' }
+          ],
+          correctAnswer: 'b',
+          explanation: 'With third person singular (she/he/it), we add -s to the verb in present simple.',
+          topic: 'Present Simple',
+          difficulty: 'easy'
+        }
       ],
-      correctAnswer: 'plays'
+      B1: [
+        {
+          id: 'g_b1_1',
+          text: 'Choose the correct conditional: "If it _____ tomorrow, we will cancel the picnic."',
+          options: [
+            { id: 'a', text: 'rains' },
+            { id: 'b', text: 'will rain' },
+            { id: 'c', text: 'would rain' },
+            { id: 'd', text: 'is raining' }
+          ],
+          correctAnswer: 'a',
+          explanation: 'In first conditional, we use present simple in the if-clause and will + infinitive in the main clause.',
+          topic: 'First Conditional',
+          difficulty: 'medium'
+        },
+        {
+          id: 'g_b1_2',
+          text: 'Select the correct sentence:',
+          options: [
+            { id: 'a', text: 'I have been working here since three years.' },
+            { id: 'b', text: 'I have been working here for three years.' },
+            { id: 'c', text: 'I am working here for three years.' },
+            { id: 'd', text: 'I work here since three years.' }
+          ],
+          correctAnswer: 'b',
+          explanation: 'We use "for" with periods of time and "since" with points in time. Present perfect continuous is correct for ongoing actions.',
+          topic: 'Present Perfect Continuous',
+          difficulty: 'medium'
+        }
+      ]
     },
-    {
-      id: 2,
-      text: 'Select the correct sentence:',
-      options: [
-        { value: 'a', text: 'I have been working here since three years.' },
-        { value: 'b', text: 'I have been working here for three years.' },
-        { value: 'c', text: 'I am working here for three years.' },
-        { value: 'd', text: 'I work here since three years.' }
+    vocabulary: {
+      A1: [
+        {
+          id: 'v_a1_1',
+          text: 'What is the opposite of "big"?',
+          options: [
+            { id: 'a', text: 'small' },
+            { id: 'b', text: 'tall' },
+            { id: 'c', text: 'wide' },
+            { id: 'd', text: 'long' }
+          ],
+          correctAnswer: 'a',
+          explanation: '"Small" is the direct opposite of "big" in terms of size.',
+          topic: 'Basic Adjectives',
+          difficulty: 'easy'
+        }
       ],
-      correctAnswer: 'b'
-    },
-    {
-      id: 3,
-      text: 'Choose the correct conditional form: "If it _____ tomorrow, we will cancel the picnic."',
-      options: [
-        { value: 'rains', text: 'rains' },
-        { value: 'will rain', text: 'will rain' },
-        { value: 'would rain', text: 'would rain' },
-        { value: 'is raining', text: 'is raining' }
-      ],
-      correctAnswer: 'rains'
+      B1: [
+        {
+          id: 'v_b1_1',
+          text: 'What is the synonym of "enormous"?',
+          options: [
+            { id: 'a', text: 'tiny' },
+            { id: 'b', text: 'huge' },
+            { id: 'c', text: 'beautiful' },
+            { id: 'd', text: 'dangerous' }
+          ],
+          correctAnswer: 'b',
+          explanation: '"Huge" and "enormous" both mean extremely large in size.',
+          topic: 'Advanced Adjectives',
+          difficulty: 'medium'
+        }
+      ]
     }
-  ];
+  };
   
-  vocabularyQuestions = [
-    {
-      id: 1,
-      text: 'What is the synonym of "enormous"?',
-      options: [
-        { value: 'tiny', text: 'tiny' },
-        { value: 'huge', text: 'huge' },
-        { value: 'beautiful', text: 'beautiful' },
-        { value: 'dangerous', text: 'dangerous' }
-      ],
-      correctAnswer: 'huge'
-    },
-    {
-      id: 2,
-      text: 'Choose the word that best completes the sentence: "The detective found a vital _____ at the crime scene."',
-      options: [
-        { value: 'clue', text: 'clue' },
-        { value: 'hint', text: 'hint' },
-        { value: 'sign', text: 'sign' },
-        { value: 'mark', text: 'mark' }
-      ],
-      correctAnswer: 'clue'
-    },
-    {
-      id: 3,
-      text: 'What is the antonym of "generous"?',
-      options: [
-        { value: 'kind', text: 'kind' },
-        { value: 'giving', text: 'giving' },
-        { value: 'stingy', text: 'stingy' },
-        { value: 'wealthy', text: 'wealthy' }
-      ],
-      correctAnswer: 'stingy'
-    }
-  ];
 
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
-    private aiQuizService: AIQuizService,
-    private authService: AuthService
+    private route: ActivatedRoute,
+    private toastController: ToastController,
+    private authService: AuthService,
+    private supabaseService: SupabaseService,
+    private quizService: QuizService,
+    private aiQuizService: AIQuizService
   ) {
-    this.quizForm = this.formBuilder.group({
+    // Formulario para configurar el quiz
+    this.setupForm = this.formBuilder.group({
       quizType: ['grammar', Validators.required],
-      difficultyLevel: ['b1', Validators.required],
-      numberOfQuestions: [10, [Validators.required, Validators.min(5), Validators.max(20)]]
+      level: ['B1', Validators.required],
+      numberOfQuestions: [5, [Validators.required, Validators.min(3), Validators.max(10)]]
     });
     
-    // Suscribirse al estado de generación de IA
-    const generatingSub = this.aiQuizService.isGenerating$.subscribe(
-      isGenerating => this.isGenerating = isGenerating
-    );
-    this.subscriptions.push(generatingSub);
+    // Formulario para las respuestas del quiz
+    this.quizForm = this.formBuilder.group({});
+    
+    // Cargar configuración desde query params si existe
+    this.loadConfigFromParams();
   }
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.clearTimer();
   }
 
-  startQuiz() {
-    if (this.quizForm.valid) {
-      this.generateAIQuiz();
-    }
-  }
-
-  /**
-   * Genera un quiz usando IA
-   */
-  private generateAIQuiz() {
-    const formValues = this.quizForm.value;
-    
-    // Obtener datos del usuario para personalización
-    const user = this.authService.currentUser;
-    
-    const aiRequest: AIQuizRequest = {
-      level: formValues.difficultyLevel.toUpperCase(),
-      type: formValues.quizType,
-      difficulty: 'medium', // Podríamos hacer esto más dinámico
-      numberOfQuestions: formValues.numberOfQuestions,
-      userWeaknesses: [], // TODO: Obtener de las estadísticas del usuario
-      previousTopics: [] // TODO: Obtener del historial del usuario
-    };
-
-    const aiSub = this.aiQuizService.generateQuiz(aiRequest).subscribe({
-      next: (response: AIQuizResponse) => {
-        this.aiQuestions = response.questions;
-        this.startAIQuiz();
-      },
-      error: (error) => {
-        console.error('Error generando quiz con IA:', error);
-        // Fallback a preguntas mock
-        this.startMockQuiz();
+  private loadConfigFromParams() {
+    this.route.queryParams.subscribe(params => {
+      if (params['type']) {
+        this.setupForm.patchValue({
+          quizType: params['type'],
+          level: params['level'] || 'B1',
+          numberOfQuestions: parseInt(params['questions']) || 5
+        });
       }
     });
-    
-    this.subscriptions.push(aiSub);
+  }
+
+  async startQuiz() {
+    if (this.setupForm.valid) {
+      this.isLoading = true;
+      
+      try {
+        // Obtener configuración del formulario
+        const config = this.setupForm.value;
+        this.quizConfig = {
+          type: config.quizType,
+          level: config.level,
+          numberOfQuestions: config.numberOfQuestions,
+          timeLimit: config.numberOfQuestions * 60 // 1 minuto por pregunta
+        };
+        
+        // Generar preguntas (mock por ahora, IA después)
+        await this.generateQuestions();
+        
+        // Inicializar quiz
+        this.initializeQuiz();
+        
+      } catch (error) {
+        console.error('Error iniciando quiz:', error);
+        await this.presentToast('Error al iniciar el quiz. Inténtalo de nuevo.', 'danger');
+      } finally {
+        this.isLoading = false;
+      }
+    }
   }
 
   /**
-   * Inicia el quiz con preguntas generadas por IA
+   * Genera preguntas para el quiz (mock por ahora, preparado para IA)
    */
-  private startAIQuiz() {
-    this.quizStarted = true;
-    this.totalSteps = this.aiQuestions.length;
-    this.currentStep = 0;
-    this.currentAIQuestion = this.aiQuestions[0];
+  private async generateQuestions() {
+    const { type, level, numberOfQuestions } = this.quizConfig;
     
-    // Crear controles de formulario para cada pregunta
-    this.aiQuestions.forEach((question, index) => {
-      this.quizForm.addControl(`aiQuestion${index}`, this.formBuilder.control('', Validators.required));
-    });
-  }
-
-  /**
-   * Inicia el quiz con preguntas mock (fallback)
-   */
-  private startMockQuiz() {
-    this.quizStarted = true;
+    // TODO: Aquí se integrará la IA después
+    // Por ahora usamos el banco de preguntas mock
+    const availableQuestions = this.questionBanks[type]?.[level] || [];
     
-    // Seleccionar preguntas basadas en el tipo de quiz
-    const quizType = this.quizForm.get('quizType')?.value;
-    if (quizType === 'grammar') {
-      this.mockQuestions = this.grammarQuestions;
-    } else if (quizType === 'vocabulary') {
-      this.mockQuestions = this.vocabularyQuestions;
-    } else {
-      this.mockQuestions = this.grammarQuestions;
+    if (availableQuestions.length === 0) {
+      throw new Error(`No hay preguntas disponibles para ${type} nivel ${level}`);
     }
     
-    this.totalSteps = this.mockQuestions.length;
+    // Seleccionar preguntas aleatoriamente
+    const shuffled = [...availableQuestions].sort(() => 0.5 - Math.random());
+    this.currentQuestions = shuffled.slice(0, numberOfQuestions);
+  }
+
+  /**
+   * Inicializa el quiz con las preguntas generadas
+   */
+  private initializeQuiz() {
+    this.quizStarted = true;
+    this.totalSteps = this.currentQuestions.length;
+    this.currentStep = 0;
+    this.currentQuestion = this.currentQuestions[0];
+    this.startTime = new Date();
+    this.score = 0;
+    this.correctAnswers = 0;
     
-    // Agregar controles de formulario para cada pregunta
-    this.mockQuestions.forEach(question => {
-      this.quizForm.addControl(`question${question.id}`, this.formBuilder.control('', Validators.required));
+    // Crear controles de formulario para cada pregunta  
+    this.quizForm = this.formBuilder.group({});
+    this.currentQuestions.forEach((question, index) => {
+      this.quizForm.addControl(`question${index}`, this.formBuilder.control('', Validators.required));
     });
+    
+    // Iniciar timer
+    this.startTimer();
+  }
+
+  /**
+   * Inicia el temporizador
+   */
+  private startTimer() {
+    this.timeLeft = this.quizConfig.timeLimit;
+    
+    this.timerInterval = setInterval(() => {
+      this.timeLeft--;
+      
+      if (this.timeLeft <= 0) {
+        this.timeUp();
+      }
+    }, 1000);
+  }
+  
+  /**
+   * Maneja cuando se acaba el tiempo
+   */
+  private async timeUp() {
+    this.clearTimer();
+    await this.presentToast('¡Tiempo agotado! Enviando respuestas...', 'warning');
+    await this.submitQuiz();
+  }
+  
+  /**
+   * Limpia el temporizador
+   */
+  private clearTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
   }
 
   nextStep() {
     if (this.currentStep < this.totalSteps - 1) {
       this.currentStep++;
-      if (this.aiQuestions.length > 0) {
-        this.currentAIQuestion = this.aiQuestions[this.currentStep];
-      }
+      this.currentQuestion = this.currentQuestions[this.currentStep];
     }
   }
 
   previousStep() {
     if (this.currentStep > 0) {
       this.currentStep--;
-      if (this.aiQuestions.length > 0) {
-        this.currentAIQuestion = this.aiQuestions[this.currentStep];
-      }
+      this.currentQuestion = this.currentQuestions[this.currentStep];
     }
   }
 
-  submitQuiz() {
-    if (this.quizForm.valid) {
-      if (this.aiQuestions.length > 0) {
-        this.calculateAIScore();
-      } else {
-        this.calculateMockScore();
-      }
+  async submitQuiz() {
+    if (this.isSubmitting) return;
+    
+    this.isSubmitting = true;
+    this.clearTimer();
+    this.endTime = new Date();
+    
+    try {
+      // Calcular puntuación
+      this.calculateScore();
+      
+      // Guardar resultados en Supabase
+      await this.saveQuizResults();
       
       this.quizCompleted = true;
+      await this.presentToast(`¡Quiz completado! Puntuación: ${this.score}%`, 'success');
+      
+    } catch (error) {
+      console.error('Error enviando quiz:', error);
+      await this.presentToast('Error al guardar los resultados. Inténtalo de nuevo.', 'danger');
+    } finally {
+      this.isSubmitting = false;
     }
   }
 
   /**
-   * Calcula la puntuación para preguntas de IA
+   * Calcula la puntuación del quiz
    */
-  private calculateAIScore() {
+  private calculateScore() {
     this.score = 0;
-    this.aiQuestions.forEach((question, index) => {
-      const control = this.quizForm.get(`aiQuestion${index}`);
-      if (control && control.value === question.correctAnswer) {
+    this.correctAnswers = 0;
+    
+    this.currentQuestions.forEach((question, index) => {
+      const control = this.quizForm.get(`question${index}`);
+      const selectedAnswer = control?.value;
+      
+      if (selectedAnswer === question.correctAnswer) {
+        this.correctAnswers++;
         this.score++;
       }
     });
+    
+    // Convertir a porcentaje
+    this.score = Math.round((this.score / this.totalSteps) * 100);
   }
 
   /**
-   * Calcula la puntuación para preguntas mock
+   * Guarda los resultados del quiz en Supabase
    */
-  private calculateMockScore() {
-    this.score = 0;
-    this.mockQuestions.forEach(question => {
-      const control = this.quizForm.get(`question${question.id}`);
-      if (control && control.value === question.correctAnswer) {
-        this.score++;
+  private async saveQuizResults() {
+    const user = this.authService.currentUser;
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
+    
+    // Preparar respuestas del usuario
+    const userAnswers = this.currentQuestions.map((question, index) => {
+      const control = this.quizForm.get(`question${index}`);
+      const selectedAnswer = control?.value || '';
+      
+      return {
+        questionId: question.id,
+        question: question.text,
+        selectedAnswer,
+        correctAnswer: question.correctAnswer,
+        isCorrect: selectedAnswer === question.correctAnswer,
+        topic: question.topic,
+        difficulty: question.difficulty
+      };
+    });
+    
+    // Calcular tiempo empleado
+    const timeSpent = this.startTime && this.endTime 
+      ? Math.round((this.endTime.getTime() - this.startTime.getTime()) / 1000)
+      : 0;
+    
+    // Guardar en Supabase
+    const quizData = {
+      user_id: user.id,
+      type: this.quizConfig.type,
+      level: this.quizConfig.level,
+      questions: {
+        config: this.quizConfig,
+        questions: this.currentQuestions,
+        answers: userAnswers
+      },
+      score: this.score,
+      total_questions: this.totalSteps,
+      time_spent: timeSpent,
+      completed_at: this.endTime?.toISOString()
+    };
+    
+    const { error } = await this.supabaseService.saveQuizResult(quizData);
+    
+    if (error) {
+      throw new Error(`Error guardando quiz: ${error.message}`);
+    }
+    
+    // Actualizar progreso del usuario
+    await this.updateUserProgress();
+  }
+  
+  /**
+   * Actualiza el progreso del usuario basado en los resultados
+   */
+  private async updateUserProgress() {
+    const user = this.authService.currentUser;
+    if (!user) return;
+    
+    try {
+      // Obtener progreso actual
+      const { data: currentProgress } = await this.supabaseService.getUserProgress(user.id);
+      
+      // Encontrar o crear progreso para esta habilidad
+      const skillProgress = currentProgress?.find(p => p.skill_type === this.quizConfig.type);
+      
+      if (skillProgress) {
+        // Actualizar progreso existente (promedio ponderado)
+        const newPercentage = Math.round(
+          (skillProgress.progress_percentage * 0.7) + (this.score * 0.3)
+        );
+        
+        await this.supabaseService.updateUserProgress({
+          id: skillProgress.id,
+          progress_percentage: newPercentage,
+          total_questions_answered: skillProgress.total_questions_answered + this.totalSteps,
+          correct_answers: skillProgress.correct_answers + this.correctAnswers,
+          last_updated: new Date().toISOString()
+        });
+      } else {
+        // Crear nuevo progreso
+        await this.supabaseService.updateUserProgress({
+          user_id: user.id,
+          skill_type: this.quizConfig.type,
+          current_level: this.quizConfig.level,
+          progress_percentage: this.score,
+          total_questions_answered: this.totalSteps,
+          correct_answers: this.correctAnswers,
+          last_updated: new Date().toISOString()
+        });
       }
+      
+    } catch (error) {
+      console.error('Error actualizando progreso:', error);
+      // No lanzar error aquí para no interrumpir el flujo
     });
   }
 
-  restartQuiz() {
+  async restartQuiz() {
+    this.clearTimer();
     this.quizStarted = false;
     this.quizCompleted = false;
     this.currentStep = 0;
     this.score = 0;
-    this.aiQuestions = [];
-    this.currentAIQuestion = null;
-    this.mockQuestions = [];
+    this.correctAnswers = 0;
+    this.currentQuestions = [];
+    this.currentQuestion = null;
+    this.startTime = null;
+    this.endTime = null;
+    this.timeLeft = 0;
     
-    // Reset form
-    this.quizForm = this.formBuilder.group({
-      quizType: ['grammar', Validators.required],
-      difficultyLevel: ['b1', Validators.required],
-      numberOfQuestions: [10, [Validators.required, Validators.min(5), Validators.max(20)]]
+    // Reset formularios
+    this.quizForm = this.formBuilder.group({});
+  }
+  
+  async presentToast(message: string, color: string) {
+    const toast = await this.toastController.create({
+      message,
+      duration: 3000,
+      color,
+      position: 'top'
     });
+    await toast.present();
   }
 
   get progressPercentage() {
     return this.totalSteps > 0 ? ((this.currentStep + 1) / this.totalSteps) * 100 : 0;
   }
   
-  get scorePercentage() {
-    return this.totalSteps > 0 ? (this.score / this.totalSteps) * 100 : 0;
-  }
-
-  /**
-   * Obtiene la pregunta actual (IA o mock)
-   */
-  get currentQuestion() {
-    if (this.aiQuestions.length > 0) {
-      return this.currentAIQuestion;
-    } else if (this.mockQuestions.length > 0) {
-      return this.mockQuestions[this.currentStep];
-    }
-    return null;
+  get timeLeftFormatted() {
+    const minutes = Math.floor(this.timeLeft / 60);
+    const seconds = this.timeLeft % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
   /**
    * Obtiene el nombre del control de formulario para la pregunta actual
    */
   get currentQuestionControlName() {
-    if (this.aiQuestions.length > 0) {
-      return `aiQuestion${this.currentStep}`;
-    } else if (this.mockQuestions.length > 0) {
-      return `question${this.mockQuestions[this.currentStep]?.id}`;
-    }
-    return '';
+    return `question${this.currentStep}`;
   }
 
   /**
@@ -365,6 +552,65 @@ export class QuizPage {
   get isCurrentQuestionAnswered() {
     const controlName = this.currentQuestionControlName;
     const control = this.quizForm.get(controlName);
-    return control && control.valid;
+    return control && control.valid && control.value !== '';
+  }
+
+  /**
+   * Obtiene la clase CSS para el timer basada en el tiempo restante
+   */
+  get timerClass() {
+    const percentage = (this.timeLeft / this.quizConfig.timeLimit) * 100;
+    if (percentage <= 10) return 'danger';
+    if (percentage <= 25) return 'warning';
+    return 'primary';
+  }
+  
+  /**
+   * Obtiene el mensaje de resultado basado en la puntuación
+   */
+  get resultMessage() {
+    if (this.score >= 90) return '¡Excelente trabajo!';
+    if (this.score >= 80) return '¡Muy bien!';
+    if (this.score >= 70) return '¡Buen trabajo!';
+    if (this.score >= 60) return 'Bien, sigue practicando';
+    return 'Necesitas más práctica';
+  }
+  
+  /**
+   * Obtiene el color del resultado basado en la puntuación
+   */
+  get resultColor() {
+    if (this.score >= 80) return 'success';
+    if (this.score >= 60) return 'primary';
+    if (this.score >= 40) return 'warning';
+    return 'danger';
+  }
+  
+  /**
+   * Obtiene recomendaciones basadas en el rendimiento
+   */
+  get recommendations() {
+    const recs = [];
+    
+    if (this.score < 70) {
+      recs.push(`Practica más ejercicios de ${this.quizConfig.type}`);
+    }
+    
+    if (this.score >= 80) {
+      recs.push('¡Considera intentar un nivel más alto!');
+    }
+    
+    // Analizar errores por tema
+    const wrongAnswers = this.currentQuestions.filter((question, index) => {
+      const control = this.quizForm.get(`question${index}`);
+      return control?.value !== question.correctAnswer;
+    });
+    
+    const topics = [...new Set(wrongAnswers.map(q => q.topic))];
+    if (topics.length > 0) {
+      recs.push(`Revisa estos temas: ${topics.join(', ')}`);
+    }
+    
+    return recs;
   }
 }
