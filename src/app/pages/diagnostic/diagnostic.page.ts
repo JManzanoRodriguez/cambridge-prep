@@ -143,11 +143,10 @@ export class DiagnosticPage {
     const controlName = `question${currentQuestion.id}`;
     const control = this.diagnosticForm.get(controlName);
 
-    console.log('🔍 Debugging pregunta:', this.currentStep + 1);
-    console.log('🔍 Control name:', controlName);
-    console.log('🔍 Control:', control);
-    console.log('🔍 Control value:', control?.value);
-    console.log('🔍 Control valid:', control?.valid);
+    // Debug temporal
+    if (control?.value) {
+      console.log('✅ Pregunta respondida:', controlName, 'Valor:', control.value);
+    }
 
     return control ? (control.value !== '' && control.value !== null && control.value !== undefined) : false;
   }
