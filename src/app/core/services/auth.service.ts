@@ -60,9 +60,8 @@ export class AuthService {
   private async loadUserProfile(supabaseUser: any): Promise<void> {
     console.log('📋 Cargando perfil para:', supabaseUser.email);
     try {
-      const { data: profile } = await this.supabaseService.getUserProfile(supabaseUser.id);
+      const { data: profile, error: profileError } = await this.supabaseService.getUserProfile(supabaseUser.id);
       console.log('📊 Perfil obtenido:', profile);
-      console.log('❌ Error al obtener perfil:', error);
       
       if (profile) {
         const user: User = {
@@ -81,7 +80,8 @@ export class AuthService {
         this.currentUserSubject.next(user);
         this.isAuthenticatedSubject.next(true);
         console.log('🎉 Estado actualizado - Autenticado:', true, 'Usuario:', user.name);
-      } else if (error) {
+      } else if (profileError) {
+        console.log('❌ Error al obtener perfil:', profileError);
         console.log('⚠️ No se pudo cargar el perfil, pero usuario está autenticado');
         // Crear usuario temporal con datos de auth
         const tempUser: User = {
