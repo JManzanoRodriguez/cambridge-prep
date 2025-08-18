@@ -137,6 +137,13 @@ export class DiagnosticPage {
     }
   }
 
+  // Verificar si la pregunta actual está respondida
+  isCurrentQuestionAnswered(): boolean {
+    const currentQuestion = this.questions[this.currentStep];
+    const control = this.diagnosticForm.get(`question${currentQuestion.id}`);
+    return control ? control.valid && control.value : false;
+  }
+
   async submitDiagnostic() {
     if (this.diagnosticForm.valid) {
       this.isLoading = true;

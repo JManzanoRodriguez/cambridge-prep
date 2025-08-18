@@ -51,7 +51,7 @@
 
           @if (currentStep < totalSteps - 1) {
             <ion-button (click)="nextStep()"
-              [disabled]="!diagnosticForm.get('question' + questions[currentStep].id)?.valid"
+              [disabled]="!isCurrentQuestionAnswered()"
               color="primary">
               Next
             </ion-button>
@@ -59,7 +59,7 @@
 
           @if (currentStep === totalSteps - 1) {
             <ion-button (click)="submitDiagnostic()"
-              [disabled]="!diagnosticForm.valid || isLoading"
+              [disabled]="!isCurrentQuestionAnswered() || isLoading"
               color="success">
               @if (isLoading) {
                 <ion-spinner name="crescent" slot="start"></ion-spinner>
