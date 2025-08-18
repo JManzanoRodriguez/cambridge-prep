@@ -42,7 +42,7 @@ import { QuizService } from '../../core/services/quiz.service';
     MatChipsModule,
     MatIconModule,
     MatTabsModule
-]
+  ]
 })
 export class QuizPage {
   // Estados del quiz
@@ -499,7 +499,7 @@ export class QuizPage {
     } catch (error) {
       console.error('Error actualizando progreso:', error);
       // No lanzar error aquí para no interrumpir el flujo
-    });
+    }
   }
 
   async restartQuiz() {
