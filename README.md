@@ -119,56 +119,81 @@ Para ejecutar el proyecto en modo desarrollo:
 ionic serve
 ```
 
+## Configuración de Supabase
+
+### 1. Crear proyecto en Supabase
+1. Ve a [supabase.com](https://supabase.com) y crea una cuenta
+2. Crea un nuevo proyecto
+3. Copia la URL y la clave anónima de tu proyecto
+
+### 2. Configurar variables de entorno
+1. Actualiza `src/environments/environment.ts`:
+   ```typescript
+   supabase: {
+     url: 'https://tu-proyecto.supabase.co',
+     anonKey: 'tu-clave-anonima'
+   }
+   ```
+
+### 3. Ejecutar migraciones
+1. Instala Supabase CLI: `npm install -g supabase`
+2. Inicia sesión: `supabase login`
+3. Vincula tu proyecto: `supabase link --project-ref tu-project-ref`
+4. Ejecuta las migraciones: `supabase db push`
+
+### 4. Configurar Edge Function para IA
+1. En tu proyecto de Supabase, ve a "Edge Functions"
+2. Crea una nueva función llamada `generate-quiz`
+3. Copia el código de `supabase/functions/generate-quiz/index.ts`
+4. Configura la variable de entorno `OPENAI_API_KEY` en Supabase
+
 Para compilar para producción:
 
 ```bash
 ionic build --prod
 ```
 
-## Problemas conocidos y soluciones
+## Funcionalidades implementadas
 
-Durante la migración se han identificado los siguientes problemas que deben corregirse:
+### ✅ Backend con Supabase
+- Autenticación de usuarios
+- Base de datos PostgreSQL
+- API REST automática
+- Edge Functions para IA
+- Row Level Security (RLS)
 
-1. **Errores de importación de módulos**:
-   - Problema: Algunos componentes están marcados como standalone pero se declaran en módulos.
-   - Solución: Actualizar los módulos para importar los componentes standalone en lugar de declararlos.
+### ✅ Sistema de Quizzes con IA
+- Generación de preguntas personalizadas
+- Adaptación por nivel (A1-C2)
+- Múltiples tipos de ejercicios
+- Sistema de cache para optimizar costos
 
-2. **Errores de TypeScript**:
-   - Problema: Propiedades sin inicializar y errores de tipado.
-   - Solución: Añadir inicializadores o usar el operador de aserción no nula (!) para las propiedades.
+### ✅ Gestión de Usuarios
+- Registro y login
+- Perfiles de usuario
+- Seguimiento de progreso
+- Sistema de suscripciones
 
-3. **Errores de directivas**:
-   - Problema: Uso de directivas como *ngIf y *ngFor sin importar CommonModule.
-   - Solución: Importar CommonModule en los módulos correspondientes o añadir las directivas a los imports de los componentes standalone.
+## Próximos pasos
 
-4. **Errores de bibliotecas**:
-   - Problema: Importaciones incorrectas de jwt-decode y ng2-charts.
-   - Solución: Actualizar las importaciones según la documentación de las bibliotecas.
+1. **Integrar Stripe** para pagos y suscripciones
+2. **Implementar límites** por tipo de usuario
+3. **Crear dashboard de administración**
+4. **Añadir más tipos de ejercicios**
+5. **Implementar sistema de recomendaciones**
 
-Para corregir estos problemas:
+## Estructura de la base de datos
 
-1. Actualizar las importaciones de jwt-decode:
-   ```typescript
-   import { jwtDecode } from 'jwt-decode';
-   ```
+### Tablas principales:
+- `users`: Perfiles de usuario extendidos
+- `quizzes`: Resultados de quizzes completados  
+- `user_progress`: Progreso del usuario por habilidad
+- `subscriptions`: Información de suscripciones
 
-2. Actualizar las importaciones de ng2-charts:
-   ```typescript
-   import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
-   ```
-
-3. Añadir CommonModule a los módulos:
-   ```typescript
-   import { CommonModule } from '@angular/common';
-   
-   @NgModule({
-     imports: [
-       CommonModule,
-       // otros imports
-     ],
-     // ...
-   })
-   ```
+### Seguridad:
+- Row Level Security (RLS) habilitado
+- Políticas que aseguran que los usuarios solo accedan a sus propios datos
+- Autenticación JWT manejada por Supabase
 
 ## Despliegue en dispositivos móviles
 
