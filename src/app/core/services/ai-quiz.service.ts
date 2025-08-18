@@ -38,7 +38,7 @@ export class AIQuizService {
   generateQuiz(request: AIQuizRequest): Observable<AIQuizResponse> {
     // Verificar si tenemos la API key configurada
     if (!environment.openaiApiKey) {
-      console.warn('OpenAI API key no configurada, usando datos mock');
+      console.info('🤖 Usando datos mock para el quiz (API key no configurada)');
       return this.generateMockQuiz(request);
     }
 

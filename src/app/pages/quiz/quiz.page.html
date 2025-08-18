@@ -1,4 +1,3 @@
-
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
@@ -89,13 +88,17 @@
                 
                 @if (currentQuestion.topic) {
                   <div class="question-metadata mt-4">
-                    <ion-chip color="primary" outline="true">
+                    <ion-chip color="secondary" outline="true">
                       <ion-icon name="bookmark-outline"></ion-icon>
                       <ion-label>{{ currentQuestion.topic }}</ion-label>
                     </ion-chip>
-                    <ion-chip color="secondary" outline="true">
+                    <ion-chip color="tertiary" outline="true">
                       <ion-icon name="time-outline"></ion-icon>
                       <ion-label>~{{ currentQuestion.estimatedTime }}s</ion-label>
+                    </ion-chip>
+                    <ion-chip color="warning">
+                      <ion-icon name="flask-outline"></ion-icon>
+                      <ion-label>Modo Demo</ion-label>
                     </ion-chip>
                   </div>
                 }
