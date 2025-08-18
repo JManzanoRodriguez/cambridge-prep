@@ -33,7 +33,8 @@
                 </ion-chip>
               </div>
             </div>
-
+              [value]="getQuestionValue(currentStep)"
+              (change)="onAnswerChange($event, currentStep)"
             <mat-radio-group [formControlName]="'question' + questions[currentStep].id" class="flex flex-col gap-3">
               @for (option of questions[currentStep].options; track option) {
                 <mat-radio-button [value]="option.value" class="mb-2">

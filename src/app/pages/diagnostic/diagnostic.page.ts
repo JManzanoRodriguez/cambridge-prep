@@ -137,18 +137,47 @@ export class DiagnosticPage {
     }
   }
 
+  // Obtener valor de la pregunta actual
+  getQuestionValue(stepIndex: number): string {
+    const question = this.questions[stepIndex];
+    const controlName = `question${question.id}`;
+    return this.diagnosticForm.get(controlName)?.value || '';
+  }
+
+  // Manejar cambio de respuesta
+  onAnswerChange(event: any, stepIndex: number) {
+    const question = this.questions[stepIndex];
+    const controlName = `question${question.id}`;
+    const selectedValue = event.value;
+    
+    console.log('🎯 Respuesta seleccionada:', {
+      pregunta: question.id,
+      control: controlName,
+      valor: selectedValue
+    });
+    
+    // Actualizar el FormControl
+    this.diagnosticForm.get(controlName)?.setValue(selectedValue);
+    
+    // Verificar que se actualizó
+    const updatedValue = this.diagnosticForm.get(controlName)?.value;
+    console.log('✅ Valor actualizado:', updatedValue);
+  }
+
   // Verificar si la pregunta actual está respondida
   isCurrentQuestionAnswered(): boolean {
     const currentQuestion = this.questions[this.currentStep];
     const controlName = `question${currentQuestion.id}`;
     const control = this.diagnosticForm.get(controlName);
+    const hasValue = control?.value && control.value !== '';
 
-    // Debug temporal
-    if (control?.value) {
-      console.log('✅ Pregunta respondida:', controlName, 'Valor:', control.value);
+    if (hasValue) {
+      console.log('🟢 Botón habilitado - Pregunta:', controlName, 'Valor:', control?.value);
+    } else {
+      console.log('🔴 Botón deshabilitado - Pregunta:', controlName, 'Valor:', control?.value);
     }
 
-    return control ? (control.value !== '' && control.value !== null && control.value !== undefined) : false;
+    return hasValue;
   }
 
   async submitDiagnostic() {
