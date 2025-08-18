@@ -121,7 +121,7 @@ export class SupabaseService {
 
     // Escuchar cambios en la autenticación
     this.supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Supabase auth state change:', event, session?.user?.email);
+      console.log('🔄 Supabase auth state change:', event, session?.user?.email || 'null');
       this.currentUserSubject.next(session?.user ?? null);
     });
   }

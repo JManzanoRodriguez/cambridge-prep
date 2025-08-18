@@ -21,13 +21,16 @@ export class AuthService {
     private supabaseService: SupabaseService,
     private router: Router
   ) {
+    console.log('🔧 AuthService constructor iniciado');
     this.initializeAuth();
 
     // Suscripción a cambios de autenticación de Supabase
     this.supabaseService.currentUser$.subscribe(async (supabaseUser) => {
+      console.log('🔄 Cambio en Supabase user:', supabaseUser?.email || 'null');
       if (supabaseUser) {
         await this.loadUserProfile(supabaseUser);
       } else {
+        console.log('❌ Usuario deslogueado, limpiando estado');
         this.currentUserSubject.next(null);
         this.isAuthenticatedSubject.next(false);
         this.accessToken = null;
@@ -39,8 +42,10 @@ export class AuthService {
    * Inicializa el estado de autenticación
    */
   private async initializeAuth(): Promise<void> {
+    console.log('🚀 Inicializando autenticación...');
     try {
       const user = await this.supabaseService.getCurrentUser();
+      console.log('👤 Usuario actual en init:', user?.email || 'null');
       if (user) {
         await this.loadUserProfile(user);
       }
@@ -53,8 +58,10 @@ export class AuthService {
    * Carga el perfil completo del usuario
    */
   private async loadUserProfile(supabaseUser: any): Promise<void> {
+    console.log('📋 Cargando perfil para:', supabaseUser.email);
     try {
       const { data: profile } = await this.supabaseService.getUserProfile(supabaseUser.id);
+      console.log('📊 Perfil obtenido:', profile);
       if (profile) {
         const user: User = {
           id: profile.id,
@@ -68,9 +75,10 @@ export class AuthService {
             isActive: true
           }
         };
+        console.log('✅ Usuario final creado:', user);
         this.currentUserSubject.next(user);
         this.isAuthenticatedSubject.next(true);
-        console.log('Usuario cargado:', user);
+        console.log('🎉 Estado actualizado - Autenticado:', true, 'Usuario:', user.name);
       }
     } catch (error) {
       console.error('Error cargando perfil de usuario:', error);

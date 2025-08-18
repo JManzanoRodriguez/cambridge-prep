@@ -34,6 +34,9 @@
 
         <!-- User Menu (if authenticated) -->
         @if (isAuthenticated) {
+          <span class="debug-info" style="color: red; font-size: 12px; margin-right: 8px;">
+            AUTH: {{isAuthenticated}} | USER: {{currentUser?.name || 'null'}}
+          </span>
           <ion-button id="user-menu-trigger" fill="clear">
             <ion-avatar slot="icon-only" class="profile-avatar">
               <img [alt]="currentUser?.name || 'User'" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
@@ -77,6 +80,9 @@
 
         <!-- Login Button (if not authenticated) -->
         @if (!isAuthenticated && currentPath !== '/auth') {
+          <span class="debug-info" style="color: blue; font-size: 12px; margin-right: 8px;">
+            NOT AUTH: {{!isAuthenticated}}
+          </span>
           <ion-button routerLink="/auth" size="small">
             Iniciar Sesión
           </ion-button>

@@ -58,11 +58,13 @@ export class AuthPage {
 
     this.authService.login(email, password).subscribe({
       next: async (user) => {
+        console.log('🎉 Login exitoso en componente:', user);
         await this.presentToast(`¡Bienvenido/a ${user.name}!`, 'success');
         // Pequeño delay para asegurar que el estado se actualice
         setTimeout(() => {
+          console.log('🔄 Navegando a dashboard...');
           this.router.navigate(['/dashboard']);
-        }, 500);
+        }, 1000);
         this.isLoading = false;
       },
       error: async (error) => {
