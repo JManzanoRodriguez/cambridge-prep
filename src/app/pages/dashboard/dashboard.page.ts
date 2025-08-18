@@ -18,7 +18,7 @@ import { OnInit } from '@angular/core';
 export class DashboardPage implements OnInit {
   userLevel = 'A1';
   hasCompletedDiagnostic = false;
-  
+
   // Datos de progreso
   progressData = {
     level: 'A1',
@@ -158,8 +158,8 @@ export class DashboardPage implements OnInit {
 
       // Verificar si ha completado el diagnóstico
       const { data: quizzes } = await this.supabaseService.getUserQuizzes(user.id, 1);
-      this.hasCompletedDiagnostic = quizzes && quizzes.some(q => q.type === 'diagnostic');
-      
+      this.hasCompletedDiagnostic = !!(quizzes && quizzes.some(q => q.type === 'diagnostic'));
+
     } catch (error) {
       console.error('Error cargando datos del usuario:', error);
     }

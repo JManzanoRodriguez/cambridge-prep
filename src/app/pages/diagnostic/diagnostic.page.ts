@@ -43,7 +43,7 @@ export class DiagnosticPage {
   isCompleted = false;
   finalScore = 0;
   determinedLevel = '';
-  
+
   questions = [
     {
       id: 1,
@@ -142,50 +142,50 @@ export class DiagnosticPage {
     const currentQuestion = this.questions[this.currentStep];
     const controlName = `question${currentQuestion.id}`;
     const control = this.diagnosticForm.get(controlName);
-    
+
     console.log('🔍 Debugging pregunta:', this.currentStep + 1);
     console.log('🔍 Control name:', controlName);
     console.log('🔍 Control:', control);
     console.log('🔍 Control value:', control?.value);
     console.log('🔍 Control valid:', control?.valid);
-    
+
     return control ? (control.value !== '' && control.value !== null && control.value !== undefined) : false;
   }
 
   async submitDiagnostic() {
     if (this.diagnosticForm.valid) {
       this.isLoading = true;
-      
+
       // Calcular puntuación y nivel
       const results = this.calculateResults();
       this.finalScore = results.score;
       this.determinedLevel = results.level;
-      
+
       // Guardar en base de datos
       await this.saveDiagnosticResults(results);
-      
+
       // Actualizar perfil del usuario
       await this.updateUserLevel(results.level);
-      
+
       this.isCompleted = true;
       this.isLoading = false;
-      
+
       await this.presentToast(`¡Test completado! Tu nivel es ${results.level}`, 'success');
     }
   }
-  
+
   private calculateResults() {
     let score = 0;
     const skillScores: { [key: string]: { correct: number; total: number } } = {};
-    
+
     this.questions.forEach(question => {
       const control = this.diagnosticForm.get(`question${question.id}`);
       const isCorrect = control && control.value === question.correctAnswer;
-      
+
       if (isCorrect) {
           score++;
         }
-      
+
       // Agrupar por habilidad
       if (!skillScores[question.skill]) {
         skillScores[question.skill] = { correct: 0, total: 0 };
@@ -195,18 +195,18 @@ export class DiagnosticPage {
         skillScores[question.skill].correct++;
       }
     });
-    
+
     // Determinar nivel basado en puntuación
     const percentage = (score / this.totalSteps) * 100;
     let level = 'A1';
-    
+
     if (percentage >= 90) level = 'C2';
     else if (percentage >= 80) level = 'C1';
     else if (percentage >= 70) level = 'B2';
     else if (percentage >= 60) level = 'B1';
     else if (percentage >= 40) level = 'A2';
     else level = 'A1';
-    
+
     return {
       score,
       percentage,
@@ -222,24 +222,22 @@ export class DiagnosticPage {
       }))
     };
   }
-  
+
   private async saveDiagnosticResults(results: any) {
     const user = this.authService.currentUser;
     if (!user) return;
-    
+
     try {
       const { error } = await this.supabaseService.saveQuizResult({
         user_id: user.id,
         type: 'diagnostic',
         level: results.level,
         questions: this.questions,
-        answers: results.answers,
         score: results.score,
         total_questions: this.totalSteps,
-        time_spent: 0, // TODO: Implementar timer
         completed_at: new Date().toISOString()
       });
-      
+
       if (error) {
         console.error('Error guardando resultados:', error);
       }
@@ -247,16 +245,16 @@ export class DiagnosticPage {
       console.error('Error guardando resultados:', error);
     }
   }
-  
+
   private async updateUserLevel(level: string) {
     const user = this.authService.currentUser;
     if (!user) return;
-    
+
     try {
       const { error } = await this.supabaseService.updateUserProfile(user.id, {
         level: level
       });
-      
+
       if (error) {
         console.error('Error actualizando nivel:', error);
       }
@@ -264,7 +262,7 @@ export class DiagnosticPage {
       console.error('Error actualizando nivel:', error);
     }
   }
-  
+
   async presentToast(message: string, color: string) {
     const toast = await this.toastController.create({
       message,
@@ -274,24 +272,24 @@ export class DiagnosticPage {
     });
     await toast.present();
   }
-  
+
   restartTest() {
     this.currentStep = 0;
     this.isCompleted = false;
     this.finalScore = 0;
     this.determinedLevel = '';
-    
+
     // Reset form
     this.diagnosticForm = this.formBuilder.group({});
     this.questions.forEach(question => {
       this.diagnosticForm.addControl(`question${question.id}`, this.formBuilder.control('', Validators.required));
     });
   }
-  
+
   goToStats() {
     this.router.navigate(['/stats']);
   }
-  
+
   goToDashboard() {
     this.router.navigate(['/dashboard']);
   }
