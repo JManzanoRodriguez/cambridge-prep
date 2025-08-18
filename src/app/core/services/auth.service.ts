@@ -62,6 +62,8 @@ export class AuthService {
     try {
       const { data: profile } = await this.supabaseService.getUserProfile(supabaseUser.id);
       console.log('📊 Perfil obtenido:', profile);
+      console.log('❌ Error al obtener perfil:', error);
+      
       if (profile) {
         const user: User = {
           id: profile.id,
@@ -79,6 +81,24 @@ export class AuthService {
         this.currentUserSubject.next(user);
         this.isAuthenticatedSubject.next(true);
         console.log('🎉 Estado actualizado - Autenticado:', true, 'Usuario:', user.name);
+      } else if (error) {
+        console.log('⚠️ No se pudo cargar el perfil, pero usuario está autenticado');
+        // Crear usuario temporal con datos de auth
+        const tempUser: User = {
+          id: supabaseUser.id,
+          name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'Usuario',
+          email: supabaseUser.email,
+          role: 'student',
+          createdAt: new Date(),
+          subscription: {
+            type: 'free',
+            startDate: new Date(),
+            isActive: true
+          }
+        };
+        console.log('🔄 Usando usuario temporal:', tempUser);
+        this.currentUserSubject.next(tempUser);
+        this.isAuthenticatedSubject.next(true);
       }
     } catch (error) {
       console.error('Error cargando perfil de usuario:', error);
