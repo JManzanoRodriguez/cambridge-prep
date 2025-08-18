@@ -2,7 +2,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { IonicModule } from '@ionic/angular';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,7 +17,6 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrls: ['./diagnostic.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
@@ -28,7 +27,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatProgressBarModule,
     MatStepperModule,
     MatIconModule
-  ]
+]
 })
 export class DiagnosticPage {
   diagnosticForm: FormGroup = this.formBuilder.group({});

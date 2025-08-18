@@ -1,20 +1,28 @@
 <div class="progress-level-container">
-  <div class="progress-header" *ngIf="label || showLevel">
-    <span class="progress-label" *ngIf="label">{{ label }}</span>
-    <span class="level-badge" *ngIf="showLevel" [style.background-color]="getLevelColor()">
-      {{ level }}
-    </span>
-  </div>
-  
+  @if (label || showLevel) {
+    <div class="progress-header">
+      @if (label) {
+        <span class="progress-label">{{ label }}</span>
+      }
+      @if (showLevel) {
+        <span class="level-badge" [style.background-color]="getLevelColor()">
+          {{ level }}
+        </span>
+      }
+    </div>
+  }
+
   <div class="progress-container" [style.height]="height">
-    <div 
-      class="progress-bar" 
-      [style.width.%]="progress" 
+    <div
+      class="progress-bar"
+      [style.width.%]="progress"
       [style.background-color]="getProgressColor()"
     ></div>
   </div>
-  
-  <div class="progress-footer" *ngIf="showPercentage">
-    <span class="progress-percentage">{{ progress }}%</span>
-  </div>
+
+  @if (showPercentage) {
+    <div class="progress-footer">
+      <span class="progress-percentage">{{ progress }}%</span>
+    </div>
+  }
 </div>

@@ -1,0 +1,11 @@
+<ion-content class="ion-padding">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    @for (plan of plans; track plan) {
+      <app-subscription-card
+        [plan]="plan"
+        [isSelected]="selected === plan.id"
+        (selectPlan)="onSelect($event)"
+      ></app-subscription-card>
+    }
+  </div>
+</ion-content>

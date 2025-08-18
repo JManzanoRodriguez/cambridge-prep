@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { NgIf, NgFor, CommonModule } from '@angular/common';
+
 import { IonicModule } from '@ionic/angular';
 
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss'],
-  imports: [CommonModule, IonicModule, RouterModule, NgIf, NgFor],
+  imports: [IonicModule, RouterModule],
   standalone: true,
 })
 export class SidebarComponent {

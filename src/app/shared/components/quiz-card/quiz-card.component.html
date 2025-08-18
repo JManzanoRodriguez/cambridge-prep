@@ -2,20 +2,36 @@
   <ion-card-header>
     <div class="question-type-header">
       <div class="question-type-icon" [ngClass]="question.type">
-        <ion-icon *ngIf="question.type === 'reading'" name="book-outline"></ion-icon>
-        <ion-icon *ngIf="question.type === 'use-of-english'" name="text-outline"></ion-icon>
-        <ion-icon *ngIf="question.type === 'listening'" name="volume-high-outline"></ion-icon>
+        @if (question.type === 'reading') {
+          <ion-icon name="book-outline"></ion-icon>
+        }
+        @if (question.type === 'use-of-english') {
+          <ion-icon name="text-outline"></ion-icon>
+        }
+        @if (question.type === 'listening') {
+          <ion-icon name="volume-high-outline"></ion-icon>
+        }
       </div>
       <ion-card-title>
-        <ng-container *ngIf="question.type === 'reading'">Reading</ng-container>
-        <ng-container *ngIf="question.type === 'use-of-english'">Use of English</ng-container>
-        <ng-container *ngIf="question.type === 'listening'">Listening</ng-container>
+        @if (question.type === 'reading') {
+          Reading
+        }
+        @if (question.type === 'use-of-english') {
+          Use of English
+        }
+        @if (question.type === 'listening') {
+          Listening
+        }
       </ion-card-title>
     </div>
     <ion-card-subtitle>
-      <ng-container *ngIf="question.type === 'reading'">Lee el texto y responde la pregunta</ng-container>
-      <ng-container *ngIf="question.type === 'use-of-english'">Elige la opción correcta</ng-container>
-      <ng-container *ngIf="question.type === 'listening'">
+      @if (question.type === 'reading') {
+        Lee el texto y responde la pregunta
+      }
+      @if (question.type === 'use-of-english') {
+        Elige la opción correcta
+      }
+      @if (question.type === 'listening') {
         <div class="listening-controls">
           <span>Escucha el audio y responde la pregunta</span>
           <ion-button size="small" fill="outline">
@@ -23,7 +39,7 @@
             Reproducir
           </ion-button>
         </div>
-      </ng-container>
+      }
     </ion-card-subtitle>
   </ion-card-header>
 
@@ -31,36 +47,41 @@
     <div class="question-text" [innerHTML]="question.question"></div>
 
     <div class="options-container">
-      <div 
-        *ngFor="let option of question.options" 
-        class="quiz-option" 
-        [ngClass]="getOptionClass(option)"
-        (click)="onSelectAnswer(option.id)"
-      >
-        <div class="option-content">
-          <div class="option-identifier">{{ option.id.toUpperCase() }}</div>
-          <div class="option-text">{{ option.text }}</div>
+      @for (option of question.options; track option) {
+        <div
+          class="quiz-option"
+          [ngClass]="getOptionClass(option)"
+          (click)="onSelectAnswer(option.id)"
+          >
+          <div class="option-content">
+            <div class="option-identifier">{{ option.id.toUpperCase() }}</div>
+            <div class="option-text">{{ option.text }}</div>
+          </div>
+          @if (isAnswerSubmitted && option.id === question.correctAnswer) {
+            <ion-icon
+              name="checkmark-circle"
+              class="option-icon correct"
+            ></ion-icon>
+          }
+          @if (isAnswerSubmitted && selectedAnswer === option.id && option.id !== question.correctAnswer) {
+            <ion-icon
+              name="close-circle"
+              class="option-icon incorrect"
+            ></ion-icon>
+          }
         </div>
-        <ion-icon 
-          *ngIf="isAnswerSubmitted && option.id === question.correctAnswer" 
-          name="checkmark-circle" 
-          class="option-icon correct"
-        ></ion-icon>
-        <ion-icon 
-          *ngIf="isAnswerSubmitted && selectedAnswer === option.id && option.id !== question.correctAnswer" 
-          name="close-circle" 
-          class="option-icon incorrect"
-        ></ion-icon>
-      </div>
+      }
     </div>
 
-    <div *ngIf="isAnswerSubmitted" class="explanation-container">
-      <div class="explanation-header">
-        <ion-icon name="information-circle-outline"></ion-icon>
-        <h4>Explicación</h4>
+    @if (isAnswerSubmitted) {
+      <div class="explanation-container">
+        <div class="explanation-header">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <h4>Explicación</h4>
+        </div>
+        <p class="explanation-text">{{ question.explanation }}</p>
       </div>
-      <p class="explanation-text">{{ question.explanation }}</p>
-    </div>
+    }
   </ion-card-content>
 
   <ion-footer>
@@ -71,22 +92,24 @@
           Volver
         </ion-button>
       </ion-buttons>
-      
+
       <ion-buttons slot="end">
-        <ion-button 
-          *ngIf="!isAnswerSubmitted" 
-          [disabled]="!selectedAnswer" 
-          (click)="onSubmitAnswer()"
-        >
-          Enviar Respuesta
-        </ion-button>
-        <ion-button 
-          *ngIf="isAnswerSubmitted" 
-          (click)="onNextQuestion()"
-        >
-          Siguiente Pregunta
-          <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
-        </ion-button>
+        @if (!isAnswerSubmitted) {
+          <ion-button
+            [disabled]="!selectedAnswer"
+            (click)="onSubmitAnswer()"
+            >
+            Enviar Respuesta
+          </ion-button>
+        }
+        @if (isAnswerSubmitted) {
+          <ion-button
+            (click)="onNextQuestion()"
+            >
+            Siguiente Pregunta
+            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+          </ion-button>
+        }
       </ion-buttons>
     </ion-toolbar>
   </ion-footer>

@@ -10,51 +10,47 @@
 
   <ion-content>
     <ion-list lines="none">
-      <ng-container *ngIf="isAuthenticated">
+      @if (isAuthenticated) {
         <!-- Navigation Items -->
-        <ion-item
-          *ngFor="let item of navItems"
-          [routerLink]="item.href"
-          routerDirection="root"
-          [color]="currentPath === item.href ? 'primary' : ''"
-          detail="false"
-          class="menu-item"
-        >
-          <ion-icon [name]="item.icon" slot="start"></ion-icon>
-          <ion-label>{{ item.name }}</ion-label>
-        </ion-item>
-
+        @for (item of navItems; track item) {
+          <ion-item
+            [routerLink]="item.href"
+            routerDirection="root"
+            [color]="currentPath === item.href ? 'primary' : ''"
+            detail="false"
+            class="menu-item"
+            >
+            <ion-icon [name]="item.icon" slot="start"></ion-icon>
+            <ion-label>{{ item.name }}</ion-label>
+          </ion-item>
+        }
         <ion-item-divider></ion-item-divider>
-
         <!-- User Profile Items -->
         <ion-item routerLink="/profile" routerDirection="root" detail="false" class="menu-item">
           <ion-icon name="person" slot="start"></ion-icon>
           <ion-label>Perfil</ion-label>
         </ion-item>
-
         <ion-item routerLink="/subscription" routerDirection="root" detail="false" class="menu-item">
           <ion-icon name="ribbon" slot="start"></ion-icon>
           <ion-label>Suscripción</ion-label>
         </ion-item>
-
         <ion-item (click)="logout()" detail="false" class="menu-item logout-item">
           <ion-icon name="log-out" slot="start"></ion-icon>
           <ion-label>Cerrar Sesión</ion-label>
         </ion-item>
-      </ng-container>
+      }
 
-      <ng-container *ngIf="!isAuthenticated">
+      @if (!isAuthenticated) {
         <!-- Non-authenticated Items -->
         <ion-item routerLink="/" routerDirection="root" [color]="currentPath === '/' ? 'primary' : ''" detail="false" class="menu-item">
           <ion-icon name="home" slot="start"></ion-icon>
           <ion-label>Inicio</ion-label>
         </ion-item>
-
         <ion-item routerLink="/login" routerDirection="root" detail="false" class="menu-item">
           <ion-icon name="person" slot="start"></ion-icon>
           <ion-label>Iniciar Sesión</ion-label>
         </ion-item>
-      </ng-container>
+      }
     </ion-list>
   </ion-content>
 </ion-menu>

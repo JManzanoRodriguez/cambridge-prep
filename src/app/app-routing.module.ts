@@ -33,7 +33,11 @@ const routes: Routes = [
   },
   {
     path: 'profile',
-    loadChildren: () => import('./pages/auth/auth.module').then(m => m.AuthPageModule)
+    loadChildren: () => import('./pages/profile/profile.module').then(m => m.ProfilePageModule)
+  },
+  {
+    path: 'subscription',
+    loadChildren: () => import('./pages/subscription/subscription.module').then(m => m.SubscriptionPageModule)
   },
   {
     path: '**',

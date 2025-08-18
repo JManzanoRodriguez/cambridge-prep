@@ -1,11 +1,11 @@
 import { Component, Input } from '@angular/core';
-import { NgIf, CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-progress-level',
   templateUrl: './progress-level.component.html',
   styleUrls: ['./progress-level.component.scss'],
-  imports: [CommonModule, NgIf],
+  imports: [],
   standalone: true,
 })
 export class ProgressLevelComponent {

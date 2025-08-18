@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Chart, ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { NgIf, NgFor, CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,7 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-stats',
   templateUrl: './stats.page.html',
   styleUrls: ['./stats.page.scss'],
-  imports: [CommonModule, NgIf, NgFor, BaseChartDirective, IonicModule, MatCardModule, MatButtonModule, MatTabsModule, MatIconModule],
+  imports: [CommonModule, BaseChartDirective, IonicModule, MatCardModule, MatButtonModule, MatTabsModule, MatIconModule],
   standalone: true,
 })
 export class StatsPage implements OnInit {

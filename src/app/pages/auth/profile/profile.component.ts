@@ -1,17 +1,42 @@
 
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { ThemeService } from '../../../core/services/theme.service';
+
+import { IonicModule } from '@ionic/angular';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
+  standalone: true,
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    IonicModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatIconModule,
+    MatSlideToggleModule,
+    MatButtonModule
+]
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   profileForm: FormGroup;
   darkMode = false;
+  private themeSub!: Subscription;
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor(private formBuilder: FormBuilder, private themeService: ThemeService) {
     this.profileForm = this.formBuilder.group({
       name: ['John Doe', [Validators.required]],
       email: ['john.doe@example.com', [Validators.required, Validators.email]],
@@ -21,27 +46,19 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Check system preference for dark mode
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    this.darkMode = prefersDark.matches;
-    
-    // Listen for changes to the prefers-color-scheme media query
-    prefersDark.addEventListener('change', (mediaQuery) => {
-      this.darkMode = mediaQuery.matches;
-      this.updateTheme();
+    this.themeSub = this.themeService.darkMode$.subscribe(dark => {
+      this.darkMode = dark;
     });
-    
-    // Initialize theme
-    this.updateTheme();
   }
 
-  updateTheme() {
-    document.body.classList.toggle('dark', this.darkMode);
+  ngOnDestroy() {
+    if (this.themeSub) {
+      this.themeSub.unsubscribe();
+    }
   }
 
   toggleDarkMode() {
-    this.darkMode = !this.darkMode;
-    this.updateTheme();
+    this.themeService.toggleDarkMode();
   }
 
   saveProfile() {
