@@ -113,7 +113,7 @@
         
         <!-- Current Question -->
         @if (currentQuestion) {
-        <form [formGroup]="quizForm">
+          <form [formGroup]="quizForm">
           <mat-card class="cambridge-card mb-6">
             <mat-card-content>
               <div class="question-header mb-4">
@@ -185,9 +185,8 @@
               </ion-button>
             }
           </div>
-        </form>
+          </form>
         }
-        @if (!isGenerating && currentQuestion) {
       </div>
     }
 

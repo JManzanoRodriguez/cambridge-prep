@@ -279,15 +279,6 @@ export class SupabaseService {
 
     return { data, error };
   }
-  
-  async updateUserProgressById(id: string, updates: Database['public']['Tables']['user_progress']['Update']) {
-    const { data, error } = await this.supabase
-      .from('user_progress')
-      .update(updates)
-      .eq('id', id);
-
-    return { data, error };
-  }
 
   // Función para llamar Edge Functions (para IA)
   async generateQuizWithAI(request: any) {

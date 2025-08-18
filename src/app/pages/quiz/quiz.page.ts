@@ -63,6 +63,11 @@ export class QuizPage {
   currentQuestions: any[] = [];
   currentQuestion: any = null;
   
+  // Preguntas generadas por IA (para futuro uso)
+  aiQuestions: any[] = [];
+  isGenerating = false;
+  recommendations: string[] = [];
+  
   // Configuración del quiz
   quizConfig = {
     type: 'grammar',
@@ -74,6 +79,9 @@ export class QuizPage {
   // Timer
   timeLeft = 0;
   timerInterval: any;
+  
+  // Estados adicionales
+  scorePercentage = 0;
   
   // Suscripciones
   private subscriptions: Subscription[] = [];
@@ -383,7 +391,6 @@ export class QuizPage {
    * Calcula la puntuación del quiz
    */
   private calculateScore() {
-    this.score = 0;
     this.correctAnswers = 0;
     
     this.currentQuestions.forEach((question, index) => {
@@ -392,12 +399,12 @@ export class QuizPage {
       
       if (selectedAnswer === question.correctAnswer) {
         this.correctAnswers++;
-        this.score++;
       }
     });
     
     // Convertir a porcentaje
-    this.score = Math.round((this.score / this.totalSteps) * 100);
+    this.score = Math.round((this.correctAnswers / this.totalSteps) * 100);
+    this.scorePercentage = this.score;
   }
 
   /**
@@ -477,11 +484,12 @@ export class QuizPage {
         );
         
         await this.supabaseService.updateUserProgress({
-          id: skillProgress.id,
+          user_id: user.id,
+          skill_type: this.quizConfig.type,
+          current_level: this.quizConfig.level,
           progress_percentage: newPercentage,
           total_questions_answered: skillProgress.total_questions_answered + this.totalSteps,
           correct_answers: skillProgress.correct_answers + this.correctAnswers,
-          last_updated: new Date().toISOString()
         });
       } else {
         // Crear nuevo progreso
@@ -492,7 +500,6 @@ export class QuizPage {
           progress_percentage: this.score,
           total_questions_answered: this.totalSteps,
           correct_answers: this.correctAnswers,
-          last_updated: new Date().toISOString()
         });
       }
       
