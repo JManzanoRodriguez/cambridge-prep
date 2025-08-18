@@ -86,15 +86,15 @@ export class AuthService {
         if (error) {
           throw new Error(this.getAuthErrorMessage(error.message));
         }
-        
+
         // Guardar token de sesión
         this.accessToken = data?.session?.access_token ?? null;
         console.log('Login exitoso, token guardado');
-        
+
         // Crear usuario temporal mientras se carga el perfil completo
         const tempUser: User = {
           id: data.user?.id || '',
-          name: data.user?.user_metadata?.name || 'Usuario',
+          name: data.user?.user_metadata?.['name'] || 'Usuario',
           email: data.user?.email || email,
           role: 'student',
           createdAt: new Date(),
@@ -104,7 +104,7 @@ export class AuthService {
             isActive: true
           }
         };
-        
+
         return tempUser;
       }),
       tap(() => {
@@ -127,10 +127,10 @@ export class AuthService {
         if (error) {
           throw new Error(this.getAuthErrorMessage(error.message));
         }
-        
+
         // Guardar token si hay sesión (puede no haberla si requiere confirmación)
         this.accessToken = data?.session?.access_token ?? null;
-        
+
         console.log('Registro exitoso');
         // Crear usuario mock para devolver inmediatamente
         const user: User = {
@@ -145,7 +145,7 @@ export class AuthService {
             isActive: true
           }
         };
-        
+
         return user;
       }),
       tap(() => {
