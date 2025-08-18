@@ -171,6 +171,14 @@ export class DiagnosticPage {
     const control = this.diagnosticForm.get(controlName);
     const hasValue = control?.value && control.value !== '';
 
+    console.log('🔍 Debugging pregunta actual:', {
+      currentStep: this.currentStep,
+      questionId: currentQuestion.id,
+      controlName: controlName,
+      controlValue: control?.value,
+      hasValue: hasValue
+    });
+
     if (hasValue) {
       console.log('🟢 Botón habilitado - Pregunta:', controlName, 'Valor:', control?.value);
     } else {
