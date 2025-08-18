@@ -5,22 +5,17 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000/api',
-  openaiApiKey: '', // Configurar con tu API key de OpenAI cuando tengas cuota disponible
+  openaiApiKey: '', // Se configurará en el backend
+  supabase: {
+    url: 'https://your-project.supabase.co',
+    anonKey: 'your-anon-key-here'
+  },
   appVersion: '1.0.0',
   appName: 'Cambridge Prep App',
   tokenExpirationTime: 3600, // segundos (1 hora)
   defaultLanguage: 'es',
   supportedLanguages: ['es', 'en'],
   debugMode: true,
-  // firebase: {
-  //   apiKey: '…',
-  //   authDomain: '…',
-  //   projectId: '…',
-  //   storageBucket: '…',
-  //   messagingSenderId: '…',
-  //   appId: '…',
-  //   measurementId: '…' // opcional
-  // }
 };
 
 /*

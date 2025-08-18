@@ -12,6 +12,7 @@ import { QuizService } from './services/quiz.service';
 import { StatsService } from './services/stats.service';
 import { ThemeService } from './services/theme.service';
 import { AIQuizService } from './services/ai-quiz.service';
+import { SupabaseService } from './services/supabase.service';
 
 /**
  * Módulo Core de la aplicación
@@ -31,6 +32,7 @@ import { AIQuizService } from './services/ai-quiz.service';
     httpInterceptorProviders,
     
     // Servicios
+    SupabaseService,
     AuthService,
     QuizService,
     StatsService,
