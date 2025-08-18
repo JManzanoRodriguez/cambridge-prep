@@ -59,7 +59,10 @@ export class AuthPage {
     this.authService.login(email, password).subscribe({
       next: async (user) => {
         await this.presentToast(`¡Bienvenido/a ${user.name}!`, 'success');
-        this.router.navigate(['/dashboard']);
+        // Pequeño delay para asegurar que el estado se actualice
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 500);
         this.isLoading = false;
       },
       error: async (error) => {
@@ -83,7 +86,10 @@ export class AuthPage {
     this.authService.register(name, email, password).subscribe({
       next: async (user) => {
         await this.presentToast(`¡Cuenta creada exitosamente! Bienvenido/a ${user.name}!`, 'success');
-        this.router.navigate(['/dashboard']);
+        // Pequeño delay para asegurar que el estado se actualice
+        setTimeout(() => {
+          this.router.navigate(['/dashboard']);
+        }, 500);
         this.isLoading = false;
       },
       error: async (error) => {

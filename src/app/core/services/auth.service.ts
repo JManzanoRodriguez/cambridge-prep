@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of, delay, from, map, catchError, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, delay, from, map, catchError, throwError, tap } from 'rxjs';
 import { User } from '../models/user.model';
 import { SupabaseService } from './supabase.service';
 import { Router } from '@angular/router';
@@ -21,35 +21,12 @@ export class AuthService {
     private supabaseService: SupabaseService,
     private router: Router
   ) {
-    this.checkAuthStatus();
+    this.initializeAuth();
 
     // Suscripción a cambios de autenticación de Supabase
     this.supabaseService.currentUser$.subscribe(async (supabaseUser) => {
       if (supabaseUser) {
-        // Opcional: si tu SupabaseService expone sesión, puedes guardar el token aquí.
-        // try {
-        //   const { data } = await this.supabaseService.getSession?.();
-        //   this.accessToken = data?.session?.access_token ?? this.accessToken;
-        // } catch {}
-
-        // Obtener perfil completo del usuario
-        const { data: profile } = await this.supabaseService.getUserProfile(supabaseUser.id);
-        if (profile) {
-          const user: User = {
-            id: profile.id,
-            name: profile.name,
-            email: profile.email,
-            role: 'student',
-            createdAt: new Date(profile.created_at),
-            subscription: {
-              type: profile.subscription_type as any,
-              startDate: new Date(profile.created_at),
-              isActive: true
-            }
-          };
-          this.currentUserSubject.next(user);
-          this.isAuthenticatedSubject.next(true);
-        }
+        await this.loadUserProfile(supabaseUser);
       } else {
         this.currentUserSubject.next(null);
         this.isAuthenticatedSubject.next(false);
@@ -59,11 +36,45 @@ export class AuthService {
   }
 
   /**
-   * Verifica el estado de autenticación al iniciar la aplicación
+   * Inicializa el estado de autenticación
    */
-  private async checkAuthStatus(): Promise<void> {
-    await this.supabaseService.getCurrentUser();
-    // El estado se actualizará automáticamente a través de la suscripción
+  private async initializeAuth(): Promise<void> {
+    try {
+      const user = await this.supabaseService.getCurrentUser();
+      if (user) {
+        await this.loadUserProfile(user);
+      }
+    } catch (error) {
+      console.error('Error inicializando autenticación:', error);
+    }
+  }
+
+  /**
+   * Carga el perfil completo del usuario
+   */
+  private async loadUserProfile(supabaseUser: any): Promise<void> {
+    try {
+      const { data: profile } = await this.supabaseService.getUserProfile(supabaseUser.id);
+      if (profile) {
+        const user: User = {
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
+          role: 'student',
+          createdAt: new Date(profile.created_at),
+          subscription: {
+            type: profile.subscription_type as any,
+            startDate: new Date(profile.created_at),
+            isActive: true
+          }
+        };
+        this.currentUserSubject.next(user);
+        this.isAuthenticatedSubject.next(true);
+        console.log('Usuario cargado:', user);
+      }
+    } catch (error) {
+      console.error('Error cargando perfil de usuario:', error);
+    }
   }
 
   /**
@@ -78,9 +89,27 @@ export class AuthService {
         
         // Guardar token de sesión
         this.accessToken = data?.session?.access_token ?? null;
+        console.log('Login exitoso, token guardado');
         
-        // El usuario se actualizará automáticamente por la suscripción
-        return this.currentUserSubject.value!;
+        // Crear usuario temporal mientras se carga el perfil completo
+        const tempUser: User = {
+          id: data.user?.id || '',
+          name: data.user?.user_metadata?.name || 'Usuario',
+          email: data.user?.email || email,
+          role: 'student',
+          createdAt: new Date(),
+          subscription: {
+            type: 'free',
+            startDate: new Date(),
+            isActive: true
+          }
+        };
+        
+        return tempUser;
+      }),
+      tap(() => {
+        // Forzar recarga del estado después del login
+        setTimeout(() => this.initializeAuth(), 100);
       }),
       catchError(error => {
         console.error('Error en login:', error);
@@ -102,6 +131,7 @@ export class AuthService {
         // Guardar token si hay sesión (puede no haberla si requiere confirmación)
         this.accessToken = data?.session?.access_token ?? null;
         
+        console.log('Registro exitoso');
         // Crear usuario mock para devolver inmediatamente
         const user: User = {
           id: data.user?.id || '',
@@ -118,6 +148,10 @@ export class AuthService {
         
         return user;
       }),
+      tap(() => {
+        // Forzar recarga del estado después del registro
+        setTimeout(() => this.initializeAuth(), 100);
+      }),
       catchError(error => {
         console.error('Error en registro:', error);
         return throwError(() => error);
@@ -131,6 +165,7 @@ export class AuthService {
   async logout(): Promise<void> {
     try {
       await this.supabaseService.signOut();
+      console.log('Logout exitoso');
       this.accessToken = null;
       this.router.navigate(['/auth']);
     } catch (error) {
