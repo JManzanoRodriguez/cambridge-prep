@@ -148,20 +148,33 @@ export class DiagnosticPage {
   onAnswerChange(event: any, stepIndex: number) {
     const question = this.questions[stepIndex];
     const controlName = `question${question.id}`;
-    const selectedValue = event.value;
+    const selectedValue = event.detail ? event.detail.value : event.value;
     
     console.log('🎯 Respuesta seleccionada:', {
       pregunta: question.id,
       control: controlName,
-      valor: selectedValue
+      valor: selectedValue,
+      event: event
     });
     
     // Actualizar el FormControl
     this.diagnosticForm.get(controlName)?.setValue(selectedValue);
     
+    // Marcar como touched para activar validación
+    this.diagnosticForm.get(controlName)?.markAsTouched();
+    
     // Verificar que se actualizó
     const updatedValue = this.diagnosticForm.get(controlName)?.value;
     console.log('✅ Valor actualizado:', updatedValue);
+    
+    // Forzar detección de cambios
+    setTimeout(() => {
+      console.log('🔄 Verificación después de timeout:', {
+        control: controlName,
+        value: this.diagnosticForm.get(controlName)?.value,
+        valid: this.diagnosticForm.get(controlName)?.valid
+      });
+    }, 100);
   }
 
   // Verificar si la pregunta actual está respondida
