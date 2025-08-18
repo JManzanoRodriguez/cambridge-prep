@@ -140,8 +140,16 @@ export class DiagnosticPage {
   // Verificar si la pregunta actual está respondida
   isCurrentQuestionAnswered(): boolean {
     const currentQuestion = this.questions[this.currentStep];
-    const control = this.diagnosticForm.get(`question${currentQuestion.id}`);
-    return control ? control.valid && control.value : false;
+    const controlName = `question${currentQuestion.id}`;
+    const control = this.diagnosticForm.get(controlName);
+    
+    console.log('🔍 Debugging pregunta:', this.currentStep + 1);
+    console.log('🔍 Control name:', controlName);
+    console.log('🔍 Control:', control);
+    console.log('🔍 Control value:', control?.value);
+    console.log('🔍 Control valid:', control?.valid);
+    
+    return control ? (control.value !== '' && control.value !== null && control.value !== undefined) : false;
   }
 
   async submitDiagnostic() {
