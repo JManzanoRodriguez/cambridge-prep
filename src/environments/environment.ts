@@ -5,9 +5,10 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000/api',
+  openaiApiKey: '', // Se configurará en el backend
   supabase: {
-    url: 'https://hdrlwgjlkqtbwlbizqvl.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkcmx3Z2psa3F0YndsYml6cXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1MTU3ODcsImV4cCI6MjA3MTA5MTc4N30.edbQHk6WPIMamzn5tw2y4bAs97k71rwS2kqCa-KfQfI'
+    url: 'https://tu-proyecto.supabase.co',
+    anonKey: 'tu-clave-anonima'
   },
   appVersion: '1.0.0',
   appName: 'Cambridge Prep App',

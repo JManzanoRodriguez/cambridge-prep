@@ -2,8 +2,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { catchError, delay, map, tap } from 'rxjs/operators';
-import { SupabaseService } from './supabase.service';
 import { User } from '../models/user.model';
+import { SupabaseService } from './supabase.service';
 
 @Injectable({
   providedIn: 'root'
