@@ -33,7 +33,7 @@ import { SupabaseService } from '../../core/services/supabase.service';
     MatProgressBarModule,
     MatStepperModule,
     MatIconModule
-]
+  ]
 })
 export class DiagnosticPage {
   diagnosticForm: FormGroup = this.formBuilder.group({});
@@ -164,8 +164,7 @@ export class DiagnosticPage {
     const skillScores: { [key: string]: { correct: number; total: number } } = {};
     
     this.questions.forEach(question => {
-      this.questions.forEach(question => {
-        const control = this.diagnosticForm.get(`question${question.id}`);
+      const control = this.diagnosticForm.get(`question${question.id}`);
       const isCorrect = control && control.value === question.correctAnswer;
       
       if (isCorrect) {
@@ -280,7 +279,6 @@ export class DiagnosticPage {
   
   goToDashboard() {
     this.router.navigate(['/dashboard']);
-    }
   }
 
   get progressPercentage() {
