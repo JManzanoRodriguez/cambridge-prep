@@ -184,13 +184,13 @@ export class SupabaseService {
     return { data, error };
   }
 
-  async getUserProfile(userId: string) {
+  async getUserProfile(userId: string): Promise<{ data: Database['public']['Tables']['users']['Row'] | null; error: any }> {
     console.log('🔍 Buscando perfil para userId:', userId);
-    
+
     // Primero verificar si el usuario existe en auth.users
     const { data: authUser } = await this.supabase.auth.getUser();
     console.log('👤 Usuario de auth:', authUser.user?.email);
-    
+
     const { data, error } = await this.supabase
       .from('users')
       .select('*')
@@ -198,7 +198,7 @@ export class SupabaseService {
       .single();
 
     console.log('📊 Resultado de getUserProfile:', { data, error });
-    
+
     // Si no existe el perfil, intentar crearlo
     if (error && error.code === 'PGRST116') {
       console.log('🔨 Perfil no existe, creando...');
@@ -206,9 +206,9 @@ export class SupabaseService {
         const createResult = await this.createUserProfile(
           authUser.user.id,
           authUser.user.email || '',
-          authUser.user.user_metadata?.name || 'Usuario'
+          authUser.user.user_metadata?.["name"] || 'Usuario'
         );
-        
+
         if (!createResult.error) {
           // Intentar obtener el perfil nuevamente
           return await this.getUserProfile(userId);
