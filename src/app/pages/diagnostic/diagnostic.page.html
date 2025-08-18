@@ -31,17 +31,17 @@
                 <ion-chip color="secondary" outline="true">
                   <ion-label>Level {{ questions[currentStep].level }}</ion-label>
                 </ion-chip>
-              </div>
-            </div>
-              [value]="getQuestionValue(currentStep)"
-              (selectionChange)="onAnswerChange($event, currentStep)"
-            <mat-radio-group [formControlName]="'question' + questions[currentStep].id" class="flex flex-col gap-3">
+            <div class="flex flex-col gap-3">
               @for (option of questions[currentStep].options; track option) {
-                <mat-radio-button [value]="option.value" class="mb-2">
+                <mat-radio-button 
+                  [value]="option.value" 
+                  [checked]="getQuestionValue(currentStep) === option.value"
+                  (change)="onRadioChange(option.value, currentStep)"
+                  class="mb-2">
                   {{ option.text }}
                 </mat-radio-button>
               }
-            </mat-radio-group>
+            </div>
           </mat-card-content>
         </mat-card>
 

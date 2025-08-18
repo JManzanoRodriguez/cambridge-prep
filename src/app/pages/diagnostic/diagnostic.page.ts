@@ -144,17 +144,15 @@ export class DiagnosticPage {
     return this.diagnosticForm.get(controlName)?.value || '';
   }
 
-  // Manejar cambio de respuesta
-  onAnswerChange(event: any, stepIndex: number) {
+  // Manejar cambio de radio button individual
+  onRadioChange(selectedValue: string, stepIndex: number) {
     const question = this.questions[stepIndex];
     const controlName = `question${question.id}`;
-    const selectedValue = event.detail ? event.detail.value : event.value;
     
     console.log('🎯 Respuesta seleccionada:', {
       pregunta: question.id,
       control: controlName,
-      valor: selectedValue,
-      event: event
+      valor: selectedValue
     });
     
     // Actualizar el FormControl
@@ -166,15 +164,6 @@ export class DiagnosticPage {
     // Verificar que se actualizó
     const updatedValue = this.diagnosticForm.get(controlName)?.value;
     console.log('✅ Valor actualizado:', updatedValue);
-    
-    // Forzar detección de cambios
-    setTimeout(() => {
-      console.log('🔄 Verificación después de timeout:', {
-        control: controlName,
-        value: this.diagnosticForm.get(controlName)?.value,
-        valid: this.diagnosticForm.get(controlName)?.valid
-      });
-    }, 100);
   }
 
   // Verificar si la pregunta actual está respondida
