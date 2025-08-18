@@ -1,8 +1,11 @@
 <ion-app>
   <app-sidebar></app-sidebar>
   <div class="ion-page" id="main-content">
-    <app-header></app-header>
-    <ion-content [fullscreen]="true" class="main-content">
+    <ion-header [translucent]="true" class="ion-no-border">
+      <app-header></app-header>
+    </ion-header>
+
+    <ion-content>
       <ion-router-outlet></ion-router-outlet>
     </ion-content>
   </div>

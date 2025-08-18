@@ -10,7 +10,16 @@ export const environment = {
   tokenExpirationTime: 3600, // segundos (1 hora)
   defaultLanguage: 'es',
   supportedLanguages: ['es', 'en'],
-  debugMode: true
+  debugMode: true,
+  // firebase: {
+  //   apiKey: '…',
+  //   authDomain: '…',
+  //   projectId: '…',
+  //   storageBucket: '…',
+  //   messagingSenderId: '…',
+  //   appId: '…',
+  //   measurementId: '…' // opcional
+  // }
 };
 
 /*

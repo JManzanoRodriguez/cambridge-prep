@@ -33,23 +33,23 @@ export class DashboardPage {
 
   // Actividades recientes
   recentActivities = [
-    { 
-      title: 'Quiz de Use of English', 
-      description: '8/10 respuestas correctas', 
-      time: 'Hace 2 horas', 
-      icon: 'list-circle' 
+    {
+      title: 'Quiz de Use of English',
+      description: '8/10 respuestas correctas',
+      time: 'Hace 2 horas',
+      icon: 'list-circle'
     },
-    { 
-      title: 'Práctica de Reading', 
-      description: 'Completado texto B2', 
-      time: 'Ayer', 
-      icon: 'book' 
+    {
+      title: 'Práctica de Reading',
+      description: 'Completado texto B2',
+      time: 'Ayer',
+      icon: 'book'
     },
-    { 
-      title: 'Test de Diagnóstico', 
-      description: 'Nivel B2 estimado', 
-      time: 'Hace 3 días', 
-      icon: 'brain' 
+    {
+      title: 'Test de Diagnóstico',
+      description: 'Nivel B2 estimado',
+      time: 'Hace 3 días',
+      icon: 'brain'
     }
   ];
 
