@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 import { IonicModule } from '@ionic/angular';
 import { MatCardModule } from '@angular/material/card';
@@ -12,6 +13,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
+import { CommonModule } from '@angular/common';
+
+// Importar servicios y modelos de IA
+import { AIQuizService } from '../../core/services/ai-quiz.service';
+import { AIQuizRequest, AIGeneratedQuestion, AIQuizResponse } from '../../core/models/ai-quiz.model';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-quiz',
@@ -19,6 +26,7 @@ import { MatTabsModule } from '@angular/material/tabs';
   styleUrls: ['./quiz.page.scss'],
   standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
@@ -34,6 +42,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 ]
 })
 export class QuizPage {
+  // Estados del quiz
   quizForm: FormGroup = this.formBuilder.group({
     quizType: ['grammar', Validators.required],
     difficulty: ['medium', Validators.required],
@@ -44,6 +53,14 @@ export class QuizPage {
   currentStep = 0;
   totalSteps = 0;
   score = 0;
+  isGenerating = false;
+  
+  // Preguntas generadas por IA
+  aiQuestions: AIGeneratedQuestion[] = [];
+  currentAIQuestion: AIGeneratedQuestion | null = null;
+  
+  // Suscripciones
+  private subscriptions: Subscription[] = [];
   
   quizTypes = [
     { id: 'grammar', name: 'Grammar', icon: 'book' },
@@ -61,7 +78,8 @@ export class QuizPage {
     { id: 'c2', name: 'C2 - Proficiency' }
   ];
   
-  questions: any[] = [];
+  // Preguntas mock (fallback)
+  mockQuestions: any[] = [];
   
   grammarQuestions = [
     {
@@ -137,64 +155,159 @@ export class QuizPage {
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private aiQuizService: AIQuizService,
+    private authService: AuthService
   ) {
     this.quizForm = this.formBuilder.group({
       quizType: ['grammar', Validators.required],
       difficultyLevel: ['b1', Validators.required],
       numberOfQuestions: [10, [Validators.required, Validators.min(5), Validators.max(20)]]
     });
+    
+    // Suscribirse al estado de generación de IA
+    const generatingSub = this.aiQuizService.isGenerating$.subscribe(
+      isGenerating => this.isGenerating = isGenerating
+    );
+    this.subscriptions.push(generatingSub);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
   startQuiz() {
     if (this.quizForm.valid) {
-      this.quizStarted = true;
-      
-      // Select questions based on quiz type
-      const quizType = this.quizForm.get('quizType')?.value;
-      if (quizType === 'grammar') {
-        this.questions = this.grammarQuestions;
-      } else if (quizType === 'vocabulary') {
-        this.questions = this.vocabularyQuestions;
-      } else {
-        // Default to grammar questions for now
-        this.questions = this.grammarQuestions;
-      }
-      
-      this.totalSteps = this.questions.length;
-      
-      // Add form controls for each question
-      this.questions.forEach(question => {
-        this.quizForm.addControl(`question${question.id}`, this.formBuilder.control('', Validators.required));
-      });
+      this.generateAIQuiz();
     }
+  }
+
+  /**
+   * Genera un quiz usando IA
+   */
+  private generateAIQuiz() {
+    const formValues = this.quizForm.value;
+    
+    // Obtener datos del usuario para personalización
+    const user = this.authService.currentUser;
+    
+    const aiRequest: AIQuizRequest = {
+      level: formValues.difficultyLevel.toUpperCase(),
+      type: formValues.quizType,
+      difficulty: 'medium', // Podríamos hacer esto más dinámico
+      numberOfQuestions: formValues.numberOfQuestions,
+      userWeaknesses: [], // TODO: Obtener de las estadísticas del usuario
+      previousTopics: [] // TODO: Obtener del historial del usuario
+    };
+
+    const aiSub = this.aiQuizService.generateQuiz(aiRequest).subscribe({
+      next: (response: AIQuizResponse) => {
+        this.aiQuestions = response.questions;
+        this.startAIQuiz();
+      },
+      error: (error) => {
+        console.error('Error generando quiz con IA:', error);
+        // Fallback a preguntas mock
+        this.startMockQuiz();
+      }
+    });
+    
+    this.subscriptions.push(aiSub);
+  }
+
+  /**
+   * Inicia el quiz con preguntas generadas por IA
+   */
+  private startAIQuiz() {
+    this.quizStarted = true;
+    this.totalSteps = this.aiQuestions.length;
+    this.currentStep = 0;
+    this.currentAIQuestion = this.aiQuestions[0];
+    
+    // Crear controles de formulario para cada pregunta
+    this.aiQuestions.forEach((question, index) => {
+      this.quizForm.addControl(`aiQuestion${index}`, this.formBuilder.control('', Validators.required));
+    });
+  }
+
+  /**
+   * Inicia el quiz con preguntas mock (fallback)
+   */
+  private startMockQuiz() {
+    this.quizStarted = true;
+    
+    // Seleccionar preguntas basadas en el tipo de quiz
+    const quizType = this.quizForm.get('quizType')?.value;
+    if (quizType === 'grammar') {
+      this.mockQuestions = this.grammarQuestions;
+    } else if (quizType === 'vocabulary') {
+      this.mockQuestions = this.vocabularyQuestions;
+    } else {
+      this.mockQuestions = this.grammarQuestions;
+    }
+    
+    this.totalSteps = this.mockQuestions.length;
+    
+    // Agregar controles de formulario para cada pregunta
+    this.mockQuestions.forEach(question => {
+      this.quizForm.addControl(`question${question.id}`, this.formBuilder.control('', Validators.required));
+    });
   }
 
   nextStep() {
     if (this.currentStep < this.totalSteps - 1) {
       this.currentStep++;
+      if (this.aiQuestions.length > 0) {
+        this.currentAIQuestion = this.aiQuestions[this.currentStep];
+      }
     }
   }
 
   previousStep() {
     if (this.currentStep > 0) {
       this.currentStep--;
+      if (this.aiQuestions.length > 0) {
+        this.currentAIQuestion = this.aiQuestions[this.currentStep];
+      }
     }
   }
 
   submitQuiz() {
     if (this.quizForm.valid) {
-      // Calculate score
-      this.score = 0;
-      this.questions.forEach(question => {
-        const control = this.quizForm.get(`question${question.id}`);
-        if (control && control.value === question.correctAnswer) {
-          this.score++;
-        }
-      });
+      if (this.aiQuestions.length > 0) {
+        this.calculateAIScore();
+      } else {
+        this.calculateMockScore();
+      }
       
       this.quizCompleted = true;
     }
+  }
+
+  /**
+   * Calcula la puntuación para preguntas de IA
+   */
+  private calculateAIScore() {
+    this.score = 0;
+    this.aiQuestions.forEach((question, index) => {
+      const control = this.quizForm.get(`aiQuestion${index}`);
+      if (control && control.value === question.correctAnswer) {
+        this.score++;
+      }
+    });
+  }
+
+  /**
+   * Calcula la puntuación para preguntas mock
+   */
+  private calculateMockScore() {
+    this.score = 0;
+    this.mockQuestions.forEach(question => {
+      const control = this.quizForm.get(`question${question.id}`);
+      if (control && control.value === question.correctAnswer) {
+        this.score++;
+      }
+    });
   }
 
   restartQuiz() {
@@ -202,6 +315,9 @@ export class QuizPage {
     this.quizCompleted = false;
     this.currentStep = 0;
     this.score = 0;
+    this.aiQuestions = [];
+    this.currentAIQuestion = null;
+    this.mockQuestions = [];
     
     // Reset form
     this.quizForm = this.formBuilder.group({
@@ -217,5 +333,38 @@ export class QuizPage {
   
   get scorePercentage() {
     return this.totalSteps > 0 ? (this.score / this.totalSteps) * 100 : 0;
+  }
+
+  /**
+   * Obtiene la pregunta actual (IA o mock)
+   */
+  get currentQuestion() {
+    if (this.aiQuestions.length > 0) {
+      return this.currentAIQuestion;
+    } else if (this.mockQuestions.length > 0) {
+      return this.mockQuestions[this.currentStep];
+    }
+    return null;
+  }
+
+  /**
+   * Obtiene el nombre del control de formulario para la pregunta actual
+   */
+  get currentQuestionControlName() {
+    if (this.aiQuestions.length > 0) {
+      return `aiQuestion${this.currentStep}`;
+    } else if (this.mockQuestions.length > 0) {
+      return `question${this.mockQuestions[this.currentStep]?.id}`;
+    }
+    return '';
+  }
+
+  /**
+   * Verifica si la pregunta actual está respondida
+   */
+  get isCurrentQuestionAnswered() {
+    const controlName = this.currentQuestionControlName;
+    const control = this.quizForm.get(controlName);
+    return control && control.valid;
   }
 }

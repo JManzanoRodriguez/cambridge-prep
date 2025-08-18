@@ -12,6 +12,7 @@ export * from './services/auth.service';
 export * from './services/quiz.service';
 export * from './services/stats.service';
 export * from './services/theme.service';
+export * from './services/ai-quiz.service';
 
 // Exportar interceptores
 export * from './interceptors';

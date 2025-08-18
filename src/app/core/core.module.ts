@@ -11,6 +11,7 @@ import { AuthService } from './services/auth.service';
 import { QuizService } from './services/quiz.service';
 import { StatsService } from './services/stats.service';
 import { ThemeService } from './services/theme.service';
+import { AIQuizService } from './services/ai-quiz.service';
 
 /**
  * Módulo Core de la aplicación
@@ -33,7 +34,8 @@ import { ThemeService } from './services/theme.service';
     AuthService,
     QuizService,
     StatsService,
-    ThemeService
+    ThemeService,
+    AIQuizService
   ]
 })
 export class CoreModule {

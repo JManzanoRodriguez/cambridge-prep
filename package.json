@@ -39,6 +39,7 @@
     "ionicons": "^7.0.0",
     "jwt-decode": "^4.0.0",
     "ng2-charts": "8.0.0",
+    "openai": "^5.12.2",
     "postcss": "^8.4.31",
     "rxjs": "~7.8.0",
     "tailwindcss": "^3.3.5",

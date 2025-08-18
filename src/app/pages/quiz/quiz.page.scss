@@ -74,3 +74,47 @@ mat-radio-button:hover {
   font-size: 16px;
   color: var(--ion-color-medium);
 }
+
+.generating-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  
+  ion-spinner {
+    margin-bottom: 1rem;
+    --color: var(--ion-color-primary);
+  }
+  
+  p {
+    margin-bottom: 0.5rem;
+  }
+}
+
+.question-metadata {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  
+  ion-chip {
+    font-size: 0.75rem;
+  }
+}
+
+.ai-badge {
+  display: flex;
+  justify-content: center;
+  
+  ion-chip {
+    font-size: 0.875rem;
+  }
+}
+
+.ai-feedback {
+  background-color: rgba(var(--ion-color-primary-rgb), 0.1);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}

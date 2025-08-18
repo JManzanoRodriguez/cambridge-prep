@@ -62,19 +62,55 @@
     <!-- Quiz Questions -->
     @if (quizStarted && !quizCompleted) {
       <div>
+        @if (isGenerating) {
+          <div class="generating-container">
+            <ion-spinner name="crescent"></ion-spinner>
+            <p>Generando preguntas personalizadas con IA...</p>
+            <p class="text-sm text-gray-500">Esto puede tomar unos segundos</p>
+          </div>
+        }
+        @if (!isGenerating && currentQuestion) {
         <mat-progress-bar mode="determinate" [value]="progressPercentage" class="mb-6"></mat-progress-bar>
         <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Question {{ currentStep + 1 }} of {{ totalSteps }}</p>
         <form [formGroup]="quizForm">
           <mat-card class="cambridge-card mb-6">
             <mat-card-content>
-              <h2 class="text-lg font-medium mb-4">{{ questions[currentStep].text }}</h2>
-              <mat-radio-group [formControlName]="'question' + questions[currentStep].id" class="flex flex-col gap-3">
-                @for (option of questions[currentStep].options; track option) {
+              <h2 class="text-lg font-medium mb-4">{{ currentQuestion.question || currentQuestion.text }}</h2>
+              
+              @if (aiQuestions.length > 0) {
+                <!-- Preguntas generadas por IA -->
+                <mat-radio-group [formControlName]="currentQuestionControlName" class="flex flex-col gap-3">
+                  @for (option of currentQuestion.options; track option) {
+                    <mat-radio-button [value]="option.id" class="mb-2">
+                      {{ option.text }}
+                    </mat-radio-button>
+                  }
+                </mat-radio-group>
+                
+                @if (currentQuestion.topic) {
+                  <div class="question-metadata mt-4">
+                    <ion-chip color="primary" outline="true">
+                      <ion-icon name="bookmark-outline"></ion-icon>
+                      <ion-label>{{ currentQuestion.topic }}</ion-label>
+                    </ion-chip>
+                    <ion-chip color="secondary" outline="true">
+                      <ion-icon name="time-outline"></ion-icon>
+                      <ion-label>~{{ currentQuestion.estimatedTime }}s</ion-label>
+                    </ion-chip>
+                  </div>
+                }
+              }
+              
+              @if (mockQuestions.length > 0) {
+                <!-- Preguntas mock (fallback) -->
+              <mat-radio-group [formControlName]="currentQuestionControlName" class="flex flex-col gap-3">
+                @for (option of currentQuestion.options; track option) {
                   <mat-radio-button [value]="option.value" class="mb-2">
                     {{ option.text }}
                   </mat-radio-button>
                 }
               </mat-radio-group>
+              }
             </mat-card-content>
           </mat-card>
           <div class="flex justify-between">
@@ -83,7 +119,7 @@
             </ion-button>
             @if (currentStep < totalSteps - 1) {
               <ion-button (click)="nextStep()"
-                [disabled]="!quizForm.get('question' + questions[currentStep].id)?.valid"
+                [disabled]="!isCurrentQuestionAnswered"
                 color="primary">
                 Next
               </ion-button>
@@ -97,6 +133,7 @@
             }
           </div>
         </form>
+        }
       </div>
     }
 
@@ -106,6 +143,16 @@
         <mat-card class="cambridge-card mb-6">
           <mat-card-content class="text-center py-6">
             <h2 class="text-2xl font-bold mb-4">Quiz Results</h2>
+            
+            @if (aiQuestions.length > 0) {
+              <div class="ai-badge mb-4">
+                <ion-chip color="success">
+                  <ion-icon name="sparkles"></ion-icon>
+                  <ion-label>Generado con IA</ion-label>
+                </ion-chip>
+              </div>
+            }
+            
             <div class="score-circle mb-6">
               <div class="score-value">{{ score }}/{{ totalSteps }}</div>
               <div class="score-percentage">{{ scorePercentage }}%</div>
@@ -121,6 +168,15 @@
                 <span class="text-warning">Keep practicing!</span>
               }
             </p>
+            
+            @if (aiQuestions.length > 0) {
+              <div class="ai-feedback mb-4">
+                <p class="text-sm text-gray-600">
+                  Las preguntas fueron personalizadas según tu nivel y necesidades de aprendizaje.
+                </p>
+              </div>
+            }
+            
             <div class="flex justify-center gap-4 mt-6">
               <ion-button (click)="restartQuiz()" color="primary">
                 New Quiz
