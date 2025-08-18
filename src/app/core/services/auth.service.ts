@@ -21,16 +21,13 @@ export class AuthService {
     private supabaseService: SupabaseService,
     private router: Router
   ) {
-    console.log('🔧 AuthService constructor iniciado');
     this.initializeAuth();
 
     // Suscripción a cambios de autenticación de Supabase
     this.supabaseService.currentUser$.subscribe(async (supabaseUser) => {
-      console.log('🔄 Cambio en Supabase user:', supabaseUser?.email || 'null');
       if (supabaseUser) {
         await this.loadUserProfile(supabaseUser);
       } else {
-        console.log('❌ Usuario deslogueado, limpiando estado');
         this.currentUserSubject.next(null);
         this.isAuthenticatedSubject.next(false);
         this.accessToken = null;
@@ -42,10 +39,8 @@ export class AuthService {
    * Inicializa el estado de autenticación
    */
   private async initializeAuth(): Promise<void> {
-    console.log('🚀 Inicializando autenticación...');
     try {
       const user = await this.supabaseService.getCurrentUser();
-      console.log('👤 Usuario actual en init:', user?.email || 'null');
       if (user) {
         await this.loadUserProfile(user);
       }
@@ -58,10 +53,8 @@ export class AuthService {
    * Carga el perfil completo del usuario
    */
   private async loadUserProfile(supabaseUser: any): Promise<void> {
-    console.log('📋 Cargando perfil para:', supabaseUser.email);
     try {
       const { data: profile, error: profileError } = await this.supabaseService.getUserProfile(supabaseUser.id);
-      console.log('📊 Perfil obtenido:', profile);
       
       if (profile) {
         const user: User = {
@@ -76,13 +69,9 @@ export class AuthService {
             isActive: true
           }
         };
-        console.log('✅ Usuario final creado:', user);
         this.currentUserSubject.next(user);
         this.isAuthenticatedSubject.next(true);
-        console.log('🎉 Estado actualizado - Autenticado:', true, 'Usuario:', user.name);
       } else if (profileError) {
-        console.log('❌ Error al obtener perfil:', profileError);
-        console.log('⚠️ No se pudo cargar el perfil, pero usuario está autenticado');
         // Crear usuario temporal con datos de auth
         const tempUser: User = {
           id: supabaseUser.id,
@@ -96,7 +85,6 @@ export class AuthService {
             isActive: true
           }
         };
-        console.log('🔄 Usando usuario temporal:', tempUser);
         this.currentUserSubject.next(tempUser);
         this.isAuthenticatedSubject.next(true);
       }
@@ -117,7 +105,6 @@ export class AuthService {
 
         // Guardar token de sesión
         this.accessToken = data?.session?.access_token ?? null;
-        console.log('Login exitoso, token guardado');
 
         // Crear usuario temporal mientras se carga el perfil completo
         const tempUser: User = {

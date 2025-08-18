@@ -50,13 +50,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     // Subscribe to authentication changes
     this.authSub = this.authService.isAuthenticated$.subscribe(isAuth => {
       this.isAuthenticated = isAuth;
-      console.log('🔵 Header - Estado de autenticación actualizado:', isAuth);
     });
 
     // Subscribe to user changes
     this.userSub = this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
-      console.log('🔵 Header - Usuario actual actualizado:', user?.name || 'null');
     });
   }
 
