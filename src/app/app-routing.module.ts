@@ -24,10 +24,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/stats/stats.module').then(m => m.StatsPageModule)
   },
   {
-    path: 'login',
-    loadChildren: () => import('./pages/auth/auth.module').then(m => m.AuthPageModule)
-  },
-  {
     path: 'auth',
     loadChildren: () => import('./pages/auth/auth.module').then(m => m.AuthPageModule)
   },

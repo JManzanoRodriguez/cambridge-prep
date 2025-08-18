@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastController, IonicModule } from '@ionic/angular';
+import { AuthService } from '../../core/services/auth.service';
 
 
 @Component({
@@ -30,7 +31,8 @@ export class AuthPage {
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private authService: AuthService
   ) {
     // Los formularios ya están inicializados
   }
@@ -52,19 +54,20 @@ export class AuthPage {
 
     this.isLoading = true;
 
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Login data:', this.loginForm.value);
+    const { email, password } = this.loginForm.value;
 
-      await this.presentToast('Inicio de sesión exitoso', 'success');
-      this.router.navigate(['/dashboard']);
-    } catch (error) {
-      console.error('Login error:', error);
-      await this.presentToast('Error al iniciar sesión. Inténtalo de nuevo.', 'danger');
-    } finally {
-      this.isLoading = false;
-    }
+    this.authService.login(email, password).subscribe({
+      next: async (user) => {
+        await this.presentToast(`¡Bienvenido/a ${user.name}!`, 'success');
+        this.router.navigate(['/dashboard']);
+        this.isLoading = false;
+      },
+      error: async (error) => {
+        console.error('Error de login:', error);
+        await this.presentToast(error.message || 'Error al iniciar sesión', 'danger');
+        this.isLoading = false;
+      }
+    });
   }
 
   async onRegisterSubmit() {
@@ -75,37 +78,24 @@ export class AuthPage {
 
     this.isLoading = true;
 
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Register data:', this.registerForm.value);
+    const { name, email, password } = this.registerForm.value;
 
-      await this.presentToast('Registro exitoso. Bienvenido/a!', 'success');
-      this.router.navigate(['/dashboard']);
-    } catch (error) {
-      console.error('Register error:', error);
-      await this.presentToast('Error al registrarse. Inténtalo de nuevo.', 'danger');
-    } finally {
-      this.isLoading = false;
-    }
+    this.authService.register(name, email, password).subscribe({
+      next: async (user) => {
+        await this.presentToast(`¡Cuenta creada exitosamente! Bienvenido/a ${user.name}!`, 'success');
+        this.router.navigate(['/dashboard']);
+        this.isLoading = false;
+      },
+      error: async (error) => {
+        console.error('Error de registro:', error);
+        await this.presentToast(error.message || 'Error al crear la cuenta', 'danger');
+        this.isLoading = false;
+      }
+    });
   }
 
   async handleSocialLogin(provider: string) {
-    this.isLoading = true;
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log(`Login with ${provider}`);
-
-      await this.presentToast(`Inicio de sesión con ${provider} exitoso`, 'success');
-      this.router.navigate(['/dashboard']);
-    } catch (error) {
-      console.error(`${provider} login error:`, error);
-      await this.presentToast(`Error al iniciar sesión con ${provider}. Inténtalo de nuevo.`, 'danger');
-    } finally {
-      this.isLoading = false;
-    }
+    await this.presentToast(`Login con ${provider} no implementado aún`, 'warning');
   }
 
   async presentToast(message: string, color: string) {

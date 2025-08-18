@@ -3,6 +3,8 @@ import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { IonicModule } from '@ionic/angular';
+import { AuthService } from '../../core/services/auth.service';
+import { User } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-sidebar',
@@ -14,6 +16,7 @@ import { IonicModule } from '@ionic/angular';
 export class SidebarComponent {
   currentPath = '';
   isAuthenticated = false;
+  currentUser: User | null = null;
 
   navItems = [
     { name: 'Inicio', href: '/dashboard', icon: 'home' },
@@ -22,17 +25,28 @@ export class SidebarComponent {
     { name: 'Estadísticas', href: '/stats', icon: 'stats-chart' },
   ];
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.currentPath = event.url;
-      this.isAuthenticated = this.currentPath !== '/login' && this.currentPath !== '/';
+    });
+
+    // Subscribe to authentication changes
+    this.authService.isAuthenticated$.subscribe(isAuth => {
+      this.isAuthenticated = isAuth;
+    });
+
+    // Subscribe to user changes
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
     });
   }
 
   logout() {
-    // Implementar lógica de cierre de sesión
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }

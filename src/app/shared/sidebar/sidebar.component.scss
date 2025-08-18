@@ -50,3 +50,25 @@ ion-item-divider {
   --background: var(--ion-color-light);
   margin: 16px 0;
 }
+
+.user-info {
+  --padding-start: 16px;
+  margin: 8px;
+  
+  ion-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  h2 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+  }
+  
+  p {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+    margin: 2px 0 0 0;
+  }
+}

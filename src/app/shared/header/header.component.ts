@@ -4,6 +4,8 @@ import { filter, Subscription } from 'rxjs';
 
 import { IonicModule } from '@ionic/angular';
 import { ThemeService } from '../../core/services/theme.service';
+import { AuthService } from '../../core/services/auth.service';
+import { User } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-header',
@@ -17,7 +19,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   currentPath = '';
   isAuthenticated = false;
   darkMode = false;
+  currentUser: User | null = null;
   private themeSub!: Subscription;
+  private authSub!: Subscription;
+  private userSub!: Subscription;
 
   navItems = [
     { name: 'Inicio', href: '/dashboard', icon: 'home' },
@@ -26,16 +31,30 @@ export class HeaderComponent implements OnInit, OnDestroy {
     { name: 'Estadísticas', href: '/stats', icon: 'stats-chart' },
   ];
 
-  constructor(private router: Router, private themeService: ThemeService) {
+  constructor(
+    private router: Router, 
+    private themeService: ThemeService,
+    private authService: AuthService
+  ) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.currentPath = event.url;
-      this.isAuthenticated = this.currentPath !== '/login' && this.currentPath !== '/';
     });
+    
     // Subscribe to theme changes
     this.themeSub = this.themeService.darkMode$.subscribe(dark => {
       this.darkMode = dark;
+    });
+
+    // Subscribe to authentication changes
+    this.authSub = this.authService.isAuthenticated$.subscribe(isAuth => {
+      this.isAuthenticated = isAuth;
+    });
+
+    // Subscribe to user changes
+    this.userSub = this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
     });
   }
 
@@ -48,6 +67,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.themeSub) {
       this.themeSub.unsubscribe();
     }
+    if (this.authSub) {
+      this.authSub.unsubscribe();
+    }
+    if (this.userSub) {
+      this.userSub.unsubscribe();
+    }
   }
 
   handleScroll() {
@@ -59,7 +84,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    // Implementar lógica de cierre de sesión
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }

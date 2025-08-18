@@ -36,7 +36,7 @@
         @if (isAuthenticated) {
           <ion-button id="user-menu-trigger" fill="clear">
             <ion-avatar slot="icon-only" class="profile-avatar">
-              <img alt="User" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+              <img [alt]="currentUser?.name || 'User'" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
             </ion-avatar>
           </ion-button>
         }
@@ -44,6 +44,16 @@
           <ng-template>
             <ion-content>
               <ion-list lines="none">
+                @if (currentUser) {
+                  <ion-item-divider>
+                    <ion-label>{{ currentUser.name }}</ion-label>
+                  </ion-item-divider>
+                  <ion-item detail="false">
+                    <ion-icon name="mail" slot="start"></ion-icon>
+                    <ion-label class="ion-text-wrap">{{ currentUser.email }}</ion-label>
+                  </ion-item>
+                  <ion-item-divider></ion-item-divider>
+                }
                 <ion-item-divider>
                   <ion-label>Mi Cuenta</ion-label>
                 </ion-item-divider>
@@ -66,8 +76,8 @@
         </ion-popover>
 
         <!-- Login Button (if not authenticated) -->
-        @if (!isAuthenticated && currentPath !== '/login') {
-          <ion-button routerLink="/login" size="small">
+        @if (!isAuthenticated && currentPath !== '/auth') {
+          <ion-button routerLink="/auth" size="small">
             Iniciar Sesión
           </ion-button>
         }
