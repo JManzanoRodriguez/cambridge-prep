@@ -31,10 +31,12 @@
                 <ion-chip color="secondary" outline="true">
                   <ion-label>Level {{ questions[currentStep].level }}</ion-label>
                 </ion-chip>
+              </div>
+            </div>
             <div class="flex flex-col gap-3">
               @for (option of questions[currentStep].options; track option) {
-                <mat-radio-button 
-                  [value]="option.value" 
+                <mat-radio-button
+                  [value]="option.value"
                   [checked]="getQuestionValue(currentStep) === option.value"
                   (change)="onRadioChange(option.value, currentStep)"
                   class="mb-2">
@@ -52,7 +54,7 @@
 
           @if (currentStep < totalSteps - 1) {
             <ion-button (click)="nextStep()"
-              [disabled]="!isCurrentQuestionAnswered()"
+              [disabled]="!isCurrentQuestionAnswered"
               color="primary">
               Next
             </ion-button>
@@ -60,7 +62,7 @@
 
           @if (currentStep === totalSteps - 1) {
             <ion-button (click)="submitDiagnostic()"
-              [disabled]="!isCurrentQuestionAnswered() || isLoading"
+              [disabled]="!isCurrentQuestionAnswered || isLoading"
               color="success">
               @if (isLoading) {
                 <ion-spinner name="crescent" slot="start"></ion-spinner>
@@ -83,17 +85,17 @@
             <div class="results-icon mb-4">
               <ion-icon name="trophy" color="warning" class="text-6xl"></ion-icon>
             </div>
-            
+
             <h1 class="text-3xl font-bold mb-2">¡Test Completado!</h1>
             <p class="text-gray-600 mb-6">Aquí están tus resultados del test diagnóstico</p>
-            
+
             <div class="score-display mb-6">
               <div class="score-circle">
                 <span class="score-number">{{ finalScore }}/{{ totalSteps }}</span>
                 <span class="score-percentage">{{ ((finalScore / totalSteps) * 100) | number:'1.0-0' }}%</span>
               </div>
             </div>
-            
+
             <div class="level-result mb-6">
               <h2 class="text-xl font-semibold mb-2">Tu nivel determinado:</h2>
               <ion-chip color="primary" class="level-chip">
@@ -122,18 +124,18 @@
                 }
               </p>
             </div>
-            
+
             <div class="action-buttons">
               <ion-button (click)="goToDashboard()" expand="block" color="primary" class="mb-3">
                 <ion-icon name="home" slot="start"></ion-icon>
                 Ir al Dashboard
               </ion-button>
-              
+
               <ion-button (click)="goToStats()" expand="block" fill="outline" color="secondary" class="mb-3">
                 <ion-icon name="stats-chart" slot="start"></ion-icon>
                 Ver Estadísticas Detalladas
               </ion-button>
-              
+
               <ion-button (click)="restartTest()" expand="block" fill="clear" color="medium">
                 <ion-icon name="refresh" slot="start"></ion-icon>
                 Repetir Test
