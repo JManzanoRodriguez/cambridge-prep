@@ -135,13 +135,19 @@ ionic serve
    }
    ```
 
-### 3. Ejecutar migraciones
+### 3. Deshabilitar confirmación de email (para desarrollo)
+1. Ve a tu proyecto en Supabase
+2. Ve a **Authentication** → **Settings**
+3. Desactiva **"Enable email confirmations"**
+4. Guarda los cambios
+
+### 4. Ejecutar migraciones
 1. Instala Supabase CLI: `npm install -g supabase`
 2. Inicia sesión: `supabase login`
 3. Vincula tu proyecto: `supabase link --project-ref tu-project-ref`
 4. Ejecuta las migraciones: `supabase db push`
 
-### 4. Configurar Edge Function para IA
+### 5. Configurar Edge Function para IA
 1. En tu proyecto de Supabase, ve a "Edge Functions"
 2. Crea una nueva función llamada `generate-quiz`
 3. Copia el código de `supabase/functions/generate-quiz/index.ts`

@@ -249,11 +249,13 @@ export class AuthService {
   private getAuthErrorMessage(error: string): string {
     const errorMap: { [key: string]: string } = {
       'Invalid login credentials': 'Credenciales incorrectas. Verifica tu email y contraseña.',
-      'Email not confirmed': 'Por favor, confirma tu email antes de iniciar sesión.',
+      'Email not confirmed': 'Email no confirmado. Verifica la configuración de Supabase.',
       'User already registered': 'Este email ya está registrado. Intenta iniciar sesión.',
       'Password should be at least 6 characters': 'La contraseña debe tener al menos 6 caracteres.',
       'Unable to validate email address: invalid format': 'El formato del email no es válido.',
       'signup is disabled': 'El registro está temporalmente deshabilitado.',
+      'Invalid email or password': 'Email o contraseña incorrectos.',
+      'Email rate limit exceeded': 'Demasiados intentos. Espera unos minutos antes de intentar de nuevo.',
     };
 
     return errorMap[error] || `Error de autenticación: ${error}`;
