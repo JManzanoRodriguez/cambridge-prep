@@ -1,5 +1,4 @@
-
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -16,12 +15,23 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { CommonModule } from '@angular/common';
 
-// Importar servicios y modelos de IA
-import { AIQuizService } from '../../core/services/ai-quiz.service';
-import { AIQuizRequest, AIGeneratedQuestion, AIQuizResponse } from '../../core/models/ai-quiz.model';
 import { AuthService } from '../../core/services/auth.service';
 import { SupabaseService } from '../../core/services/supabase.service';
-import { QuizService } from '../../core/services/quiz.service';
+
+interface QuizOption {
+  id: string;
+  text: string;
+}
+
+interface QuizQuestion {
+  id: string;
+  text: string;
+  options: QuizOption[];
+  correctAnswer: string;
+  explanation: string;
+  topic: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
 
 @Component({
   selector: 'app-quiz',
@@ -44,7 +54,7 @@ import { QuizService } from '../../core/services/quiz.service';
     MatTabsModule
   ]
 })
-export class QuizPage {
+export class QuizPage implements OnDestroy {
   // Estados del quiz
   setupForm: FormGroup;
   quizForm: FormGroup;
@@ -60,13 +70,8 @@ export class QuizPage {
   endTime: Date | null = null;
   
   // Preguntas del quiz actual
-  currentQuestions: any[] = [];
-  currentQuestion: any = null;
-  
-  // Preguntas generadas por IA (para futuro uso)
-  aiQuestions: any[] = [];
-  isGenerating = false;
-  recommendations: string[] = [];
+  currentQuestions: QuizQuestion[] = [];
+  currentQuestion: QuizQuestion | null = null;
   
   // Configuración del quiz
   quizConfig = {
@@ -79,9 +84,6 @@ export class QuizPage {
   // Timer
   timeLeft = 0;
   timerInterval: any;
-  
-  // Estados adicionales
-  scorePercentage = 0;
   
   // Suscripciones
   private subscriptions: Subscription[] = [];
@@ -103,7 +105,7 @@ export class QuizPage {
   ];
   
   // Bancos de preguntas mock por tipo y nivel
-  questionBanks: { [key: string]: { [key: string]: any[] } } = {
+  questionBanks: { [key: string]: { [key: string]: QuizQuestion[] } } = {
     grammar: {
       A1: [
         {
@@ -132,6 +134,20 @@ export class QuizPage {
           correctAnswer: 'b',
           explanation: 'With third person singular (she/he/it), we add -s to the verb in present simple.',
           topic: 'Present Simple',
+          difficulty: 'easy'
+        },
+        {
+          id: 'g_a1_3',
+          text: 'Choose the correct article: "I have _____ apple."',
+          options: [
+            { id: 'a', text: 'a' },
+            { id: 'b', text: 'an' },
+            { id: 'c', text: 'the' },
+            { id: 'd', text: 'no article' }
+          ],
+          correctAnswer: 'b',
+          explanation: 'We use "an" before words that start with a vowel sound.',
+          topic: 'Articles',
           difficulty: 'easy'
         }
       ],
@@ -181,6 +197,20 @@ export class QuizPage {
           explanation: '"Small" is the direct opposite of "big" in terms of size.',
           topic: 'Basic Adjectives',
           difficulty: 'easy'
+        },
+        {
+          id: 'v_a1_2',
+          text: 'Choose the correct word: "I _____ breakfast every morning."',
+          options: [
+            { id: 'a', text: 'make' },
+            { id: 'b', text: 'do' },
+            { id: 'c', text: 'have' },
+            { id: 'd', text: 'take' }
+          ],
+          correctAnswer: 'c',
+          explanation: 'We "have" breakfast, lunch, and dinner. This is a common collocation.',
+          topic: 'Daily Routines',
+          difficulty: 'easy'
         }
       ],
       B1: [
@@ -199,9 +229,44 @@ export class QuizPage {
           difficulty: 'medium'
         }
       ]
+    },
+    reading: {
+      B1: [
+        {
+          id: 'r_b1_1',
+          text: 'According to the passage, what is the main benefit of renewable energy?',
+          options: [
+            { id: 'a', text: 'It is cheaper than fossil fuels' },
+            { id: 'b', text: 'It reduces environmental impact' },
+            { id: 'c', text: 'It is easier to produce' },
+            { id: 'd', text: 'It requires less maintenance' }
+          ],
+          correctAnswer: 'b',
+          explanation: 'The passage emphasizes that renewable energy helps reduce carbon emissions and environmental damage.',
+          topic: 'Environmental Issues',
+          difficulty: 'medium'
+        }
+      ]
+    },
+    listening: {
+      B1: [
+        {
+          id: 'l_b1_1',
+          text: 'What is the speaker\'s main point about digital communication?',
+          options: [
+            { id: 'a', text: 'It has completely replaced face-to-face interaction' },
+            { id: 'b', text: 'It has both benefits and drawbacks for society' },
+            { id: 'c', text: 'It should be avoided whenever possible' },
+            { id: 'd', text: 'It is primarily beneficial for business purposes' }
+          ],
+          correctAnswer: 'b',
+          explanation: 'The speaker discusses both positive and negative aspects of digital communication.',
+          topic: 'Technology and Society',
+          difficulty: 'medium'
+        }
+      ]
     }
   };
-  
 
   constructor(
     private formBuilder: FormBuilder,
@@ -209,9 +274,7 @@ export class QuizPage {
     private route: ActivatedRoute,
     private toastController: ToastController,
     private authService: AuthService,
-    private supabaseService: SupabaseService,
-    private quizService: QuizService,
-    private aiQuizService: AIQuizService
+    private supabaseService: SupabaseService
   ) {
     // Formulario para configurar el quiz
     this.setupForm = this.formBuilder.group({
@@ -233,7 +296,7 @@ export class QuizPage {
   }
 
   private loadConfigFromParams() {
-    this.route.queryParams.subscribe(params => {
+    const sub = this.route.queryParams.subscribe(params => {
       if (params['type']) {
         this.setupForm.patchValue({
           quizType: params['type'],
@@ -242,6 +305,7 @@ export class QuizPage {
         });
       }
     });
+    this.subscriptions.push(sub);
   }
 
   async startQuiz() {
@@ -258,7 +322,7 @@ export class QuizPage {
           timeLimit: config.numberOfQuestions * 60 // 1 minuto por pregunta
         };
         
-        // Generar preguntas (mock por ahora, IA después)
+        // Generar preguntas
         await this.generateQuestions();
         
         // Inicializar quiz
@@ -279,8 +343,7 @@ export class QuizPage {
   private async generateQuestions() {
     const { type, level, numberOfQuestions } = this.quizConfig;
     
-    // TODO: Aquí se integrará la IA después
-    // Por ahora usamos el banco de preguntas mock
+    // Obtener preguntas del banco mock
     const availableQuestions = this.questionBanks[type]?.[level] || [];
     
     if (availableQuestions.length === 0) {
@@ -289,7 +352,14 @@ export class QuizPage {
     
     // Seleccionar preguntas aleatoriamente
     const shuffled = [...availableQuestions].sort(() => 0.5 - Math.random());
-    this.currentQuestions = shuffled.slice(0, numberOfQuestions);
+    this.currentQuestions = shuffled.slice(0, Math.min(numberOfQuestions, shuffled.length));
+    
+    // Si no hay suficientes preguntas, repetir algunas
+    while (this.currentQuestions.length < numberOfQuestions) {
+      const remaining = numberOfQuestions - this.currentQuestions.length;
+      const additional = shuffled.slice(0, remaining);
+      this.currentQuestions.push(...additional);
+    }
   }
 
   /**
@@ -404,7 +474,6 @@ export class QuizPage {
     
     // Convertir a porcentaje
     this.score = Math.round((this.correctAnswers / this.totalSteps) * 100);
-    this.scorePercentage = this.score;
   }
 
   /**
@@ -474,34 +543,32 @@ export class QuizPage {
       // Obtener progreso actual
       const { data: currentProgress } = await this.supabaseService.getUserProgress(user.id);
       
-      // Encontrar o crear progreso para esta habilidad
+      // Encontrar progreso para esta habilidad
       const skillProgress = currentProgress?.find(p => p.skill_type === this.quizConfig.type);
+      
+      let newPercentage = this.score;
+      let totalQuestions = this.totalSteps;
+      let correctAnswers = this.correctAnswers;
       
       if (skillProgress) {
         // Actualizar progreso existente (promedio ponderado)
-        const newPercentage = Math.round(
-          (skillProgress.progress_percentage * 0.7) + (this.score * 0.3)
+        const existingWeight = 0.7;
+        const newWeight = 0.3;
+        newPercentage = Math.round(
+          (skillProgress.progress_percentage * existingWeight) + (this.score * newWeight)
         );
-        
-        await this.supabaseService.updateUserProgress({
-          user_id: user.id,
-          skill_type: this.quizConfig.type,
-          current_level: this.quizConfig.level,
-          progress_percentage: newPercentage,
-          total_questions_answered: skillProgress.total_questions_answered + this.totalSteps,
-          correct_answers: skillProgress.correct_answers + this.correctAnswers,
-        });
-      } else {
-        // Crear nuevo progreso
-        await this.supabaseService.updateUserProgress({
-          user_id: user.id,
-          skill_type: this.quizConfig.type,
-          current_level: this.quizConfig.level,
-          progress_percentage: this.score,
-          total_questions_answered: this.totalSteps,
-          correct_answers: this.correctAnswers,
-        });
+        totalQuestions = skillProgress.total_questions_answered + this.totalSteps;
+        correctAnswers = skillProgress.correct_answers + this.correctAnswers;
       }
+      
+      await this.supabaseService.updateUserProgress({
+        user_id: user.id,
+        skill_type: this.quizConfig.type,
+        current_level: this.quizConfig.level,
+        progress_percentage: newPercentage,
+        total_questions_answered: totalQuestions,
+        correct_answers: correctAnswers,
+      });
       
     } catch (error) {
       console.error('Error actualizando progreso:', error);
@@ -536,6 +603,7 @@ export class QuizPage {
     await toast.present();
   }
 
+  // Getters
   get progressPercentage() {
     return this.totalSteps > 0 ? ((this.currentStep + 1) / this.totalSteps) * 100 : 0;
   }
@@ -546,25 +614,16 @@ export class QuizPage {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
-  /**
-   * Obtiene el nombre del control de formulario para la pregunta actual
-   */
   get currentQuestionControlName() {
     return `question${this.currentStep}`;
   }
 
-  /**
-   * Verifica si la pregunta actual está respondida
-   */
   get isCurrentQuestionAnswered() {
     const controlName = this.currentQuestionControlName;
     const control = this.quizForm.get(controlName);
     return control && control.valid && control.value !== '';
   }
 
-  /**
-   * Obtiene la clase CSS para el timer basada en el tiempo restante
-   */
   get timerClass() {
     const percentage = (this.timeLeft / this.quizConfig.timeLimit) * 100;
     if (percentage <= 10) return 'danger';
@@ -572,9 +631,6 @@ export class QuizPage {
     return 'primary';
   }
   
-  /**
-   * Obtiene el mensaje de resultado basado en la puntuación
-   */
   get resultMessage() {
     if (this.score >= 90) return '¡Excelente trabajo!';
     if (this.score >= 80) return '¡Muy bien!';
@@ -583,9 +639,6 @@ export class QuizPage {
     return 'Necesitas más práctica';
   }
   
-  /**
-   * Obtiene el color del resultado basado en la puntuación
-   */
   get resultColor() {
     if (this.score >= 80) return 'success';
     if (this.score >= 60) return 'primary';
@@ -593,9 +646,6 @@ export class QuizPage {
     return 'danger';
   }
   
-  /**
-   * Obtiene recomendaciones basadas en el rendimiento
-   */
   get recommendations() {
     const recs = [];
     

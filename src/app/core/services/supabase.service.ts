@@ -273,9 +273,12 @@ export class SupabaseService {
   }
 
   async updateUserProgress(progressData: Database['public']['Tables']['user_progress']['Insert']) {
+    // Usar upsert para insertar o actualizar
     const { data, error } = await this.supabase
       .from('user_progress')
-      .upsert(progressData);
+      .upsert(progressData, {
+        onConflict: 'user_id,skill_type'
+      });
 
     return { data, error };
   }
